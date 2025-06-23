@@ -64,7 +64,7 @@
 
 //! Keep enough room for the maximum sized application based on platform, plus a little more room.
 //! Source: https://pebbletechnology.atlassian.net/wiki/display/DEV/PBW+3.0
-#if PLATFORM_TINTIN || PLATFORM_SILK || PLATFORM_ASTERIX || UNITTEST
+#if PLATFORM_TINTIN || PLATFORM_SILK || PLATFORM_ASTERIX || UNITTEST || PLATFORM_NRF52840DK
 #define APP_SPACE_BUFFER KiBYTES(300)
 #else
 #define APP_SPACE_BUFFER MiBYTES(4)

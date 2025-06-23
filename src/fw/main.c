@@ -252,7 +252,7 @@ int main(void) {
 #if !MICRO_FAMILY_NRF5
   periph_config_enable(PWR, RCC_APB1Periph_PWR);
 #endif
-  pwr_flash_power_down_stop_mode(true /* power_down */);
+  //pwr_flash_power_down_stop_mode(true /* power_down */);
 #if !MICRO_FAMILY_NRF5
   periph_config_disable(PWR, RCC_APB1Periph_PWR);
 #endif
@@ -291,7 +291,7 @@ static void init_drivers(void) {
   voltage_monitor_init();
 
   battery_init();
-  vibe_init();
+  //vibe_init();
 
 #if CAPABILITY_HAS_ACCESSORY_CONNECTOR
   accessory_init();

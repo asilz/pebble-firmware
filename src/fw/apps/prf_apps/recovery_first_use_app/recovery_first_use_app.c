@@ -169,7 +169,7 @@ static void prv_update_background_image_and_url_text(RecoveryFUAppData *data) {
   int16_t icon_y_offset;
   int16_t text_y_offset;
 
-#if PLATFORM_ASTERIX
+#if PLATFORM_ASTERIX || PLATFORM_NRF52840DK
   icon_res_id = RESOURCE_ID_LAUNCH_APP;
   icon_x_offset = 17;
   icon_y_offset = 22;

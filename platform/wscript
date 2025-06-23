@@ -44,6 +44,10 @@ def is_asterix(ctx):
     return ctx.get_board().startswith('asterix')
 
 @conf
+def is_nrf52840dk(ctx):
+    return ctx.get_board().startswith('nrf52840dk')
+
+@conf
 def get_platform_name(ctx):
     if is_tintin(ctx):
         return "tintin"
@@ -59,6 +63,8 @@ def get_platform_name(ctx):
         return "robert"
     elif is_asterix(ctx):
         return "asterix"
+    elif is_nrf52840dk(ctx):
+        return "nrf52840dk"
     else:
         return "unknown"
 
@@ -143,18 +149,15 @@ def has_touch(ctx):
         return False
     elif is_asterix(ctx):
         return False
+    elif is_nrf52840dk(ctx):
+        return False
     else:
         return None
 
 
 @conf
 def get_hrm(ctx):
-    if is_robert(ctx):
-        return "AS7000"
-    elif is_silk(ctx):
-        return "AS7000"
-    else:
-        return None
+    return None
 
 
 @conf
@@ -194,6 +197,9 @@ def add_platform_defines(ctx, env):
     elif ctx.is_asterix():
         bit_depth = 1
         platform = 'ASTERIX'
+    elif ctx.is_nrf52840dk():
+        bit_depth = 1
+        platform = 'NRF52840DK'
     else:
         ctx.fatal('No platform specified for {}!'.format(ctx.options.board))
 

@@ -25,7 +25,7 @@
 static const char KNOCKING_CODE[] = "sn0wy";
 #elif PLATFORM_SILK
 static const char KNOCKING_CODE[] = "s1lk";
-#elif PLATFORM_ASTERIX
+#elif PLATFORM_ASTERIX || PLATFORM_NRF52840DK
 static const char KNOCKING_CODE[] = "aster1x";
 #elif PLATFORM_ROBERT
 static const char KNOCKING_CODE[] = "r0bert";

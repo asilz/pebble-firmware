@@ -81,7 +81,8 @@ def options(opt):
                              'robert_bb2',
                              'robert_evt',
                              'robert_es',
-                             'asterix',],
+                             'asterix',
+                             'nrf52840dk',],
                    help='Which board we are targeting '
                         'bb2, snowy_dvt, spalding, silk...')
     opt.add_option('--jtag', action='store', default=None, dest='jtag',  # default is bb2 (below)
@@ -430,6 +431,8 @@ def configure(conf):
         conf.env.JTAG = 'swd_ftdi'
     elif conf.options.board in ('asterix'):
         conf.env.JTAG = 'swd_cmsisdap'
+    elif conf.options.board in ('nrf52840dk'):
+        conf.env.JTAG = 'swd_jlink'
     else:
         # default to bb2
         conf.env.JTAG = 'bb2'
@@ -450,7 +453,7 @@ def configure(conf):
     elif conf.is_snowy_compatible():
         conf.env.PLATFORM_NAME = 'basalt'
         conf.env.MIN_SDK_VERSION = 2
-    elif conf.is_silk() or conf.is_asterix():
+    elif conf.is_silk() or conf.is_asterix() or conf.is_nrf52840dk():
         conf.env.PLATFORM_NAME = 'diorite'
         conf.env.MIN_SDK_VERSION = 2
     elif conf.is_cutts() or conf.is_robert():
@@ -468,7 +471,7 @@ def configure(conf):
         conf.env.MICRO_FAMILY = 'STM32F4'
     elif conf.is_cutts() or conf.is_robert():
         conf.env.MICRO_FAMILY = 'STM32F7'
-    elif conf.is_asterix():
+    elif conf.is_asterix() or conf.is_nrf52840dk():
         conf.env.MICRO_FAMILY = 'NRF52840'
     else:
         conf.fatal('No micro family specified for {}!'.format(conf.options.board))
@@ -513,7 +516,7 @@ def configure(conf):
     elif conf.is_tintin() or conf.is_snowy() or conf.is_spalding():
         conf.env.bt_controller = 'cc2564x'
         conf.env.append_value('DEFINES', ['BT_CONTROLLER_CC2564X'])
-    elif conf.is_asterix():
+    elif conf.is_asterix() or conf.is_nrf52840dk():
         conf.env.bt_controller = 'nrf52'
         conf.env.append_value('DEFINES', ['BT_CONTROLLER_NRF52'])
     elif bt_board in ('silk_bb2', 'silk', 'robert_bb2', 'robert_evt'):

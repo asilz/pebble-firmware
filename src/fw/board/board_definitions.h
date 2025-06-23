@@ -61,6 +61,8 @@
 #include "boards/board_robert.h" // prototypes for Robert EVT
 #elif BOARD_ASTERIX
 #include "boards/board_asterix.h"
+#elif BOARD_NRF52840DK
+#include "boards/board_nrf52840dk.h"
 #else
 #error "Unknown board definition"
 #endif

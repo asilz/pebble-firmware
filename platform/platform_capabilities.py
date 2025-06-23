@@ -28,7 +28,6 @@ JAVASCRIPT_BYTECODE_VERSION = 1
 master_capability_set = {
     'COMPOSITOR_USES_DMA',
     'HAS_ACCESSORY_CONNECTOR',
-    'HAS_ALS_OPT3001',
     'HAS_APPLE_MFI',
     'HAS_APP_GLANCES',
     'HAS_BUILTIN_HRM',
@@ -51,7 +50,6 @@ master_capability_set = {
     'HAS_TIMELINE_PEEK',
     'HAS_TOUCHSCREEN',
     'HAS_VIBE_SCORES',
-    'HAS_VIBE_DRV2604',
     'HAS_WEATHER',
     'USE_PARALLEL_FLASH',
     'HAS_PUTBYTES_PREACKING',
@@ -186,7 +184,7 @@ board_capability_dicts = [
         {
             'HAS_ACCESSORY_CONNECTOR',
             'HAS_APP_GLANCES',
-            'HAS_BUILTIN_HRM',
+            # 'HAS_BUILTIN_HRM', -- TODO: disabled because driver was removed
             'HAS_CORE_NAVIGATION4',
             'HAS_HEALTH_TRACKING',
             'HAS_JAVASCRIPT',
@@ -211,7 +209,7 @@ board_capability_dicts = [
             'COMPOSITOR_USES_DMA',
             'HAS_ACCESSORY_CONNECTOR',
             'HAS_APP_GLANCES',
-            'HAS_BUILTIN_HRM',
+            # 'HAS_BUILTIN_HRM', -- TODO: disabled because driver was removed
             'HAS_CORE_NAVIGATION4',
             'HAS_GLYPH_BITMAP_CACHING',
             'HAS_HEALTH_TRACKING',
@@ -260,7 +258,6 @@ board_capability_dicts = [
         'boards': [ 'asterix' ],
         'capabilities':
         {
-            'HAS_ALS_OPT3001',
             'HAS_APP_GLANCES',
             'HAS_CORE_NAVIGATION4',
             'HAS_HEALTH_TRACKING',
@@ -277,7 +274,29 @@ board_capability_dicts = [
             'HAS_WEATHER',
             'HAS_PUTBYTES_PREACKING',
             # 'HAS_MAGNETOMETER',
-            'HAS_VIBE_DRV2604',
+            'HAS_PMIC',
+        },
+    },
+    {
+        'boards': [ 'nrf52840dk' ],
+        'capabilities':
+        {
+            'HAS_APP_GLANCES',
+            'HAS_CORE_NAVIGATION4',
+            'HAS_HEALTH_TRACKING',
+            'HAS_JAVASCRIPT',
+            'HAS_LAUNCHER4',
+            # 'HAS_MAPPABLE_FLASH' -- TODO: PBL-33860 verify memory-mappable flash works on silk before activating
+            # 'HAS_MICROPHONE',
+            # 'USE_PARALLEL_FLASH' -- FIXME hack to get the "modern" flash layout. Fix when we add support for new flash
+            'HAS_SDK_SHELL4',
+            'HAS_SPRF_V3',
+            'HAS_TEMPERATURE',
+            'HAS_TIMELINE_PEEK',
+            'HAS_VIBE_SCORES',
+            'HAS_WEATHER',
+            'HAS_PUTBYTES_PREACKING',
+            # 'HAS_MAGNETOMETER',
             'HAS_PMIC',
         },
     },

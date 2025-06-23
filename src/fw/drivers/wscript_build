@@ -202,6 +202,33 @@ elif bld.is_asterix():
             'driver_voltage_monitor',
         ],
     )
+elif bld.is_nrf52840dk():
+    bld(
+        name='drivers',
+        use=[
+            'driver_ambient_light',
+            'driver_backlight',
+            'driver_battery',
+            'driver_button',
+            'driver_display',
+            'driver_flash',
+            'driver_gpio_defaults',
+            'driver_imu',
+            'driver_mcu',
+            'driver_mpu',
+            'driver_otp',
+            'driver_periph_config',
+            'driver_pmic',
+            'driver_rng',
+            'driver_rtc',
+            'driver_task_watchdog',
+            'driver_temperature',
+            'driver_uart',
+            'driver_vibe',
+            'driver_voltage_monitor',
+        ],
+    )
+
 
 ## ----------
 
@@ -223,18 +250,6 @@ if bld.is_snowy_compatible() or bld.is_silk() or bld.is_cutts() or bld.is_robert
         ],
     )
 
-if bld.capability('HAS_ALS_OPT3001'):
-    bld.objects(
-        name='driver_ambient_light',
-        source=[
-            'ambient_light_opt3001.c',
-        ],
-        use=[
-            'driver_i2c',
-            'fw_includes',
-            'root_includes',
-        ],
-    )
 elif mcu_family in ('STM32F2', 'STM32F4', 'STM32F7'):
     bld.objects(
         name='driver_ambient_light',
@@ -362,6 +377,31 @@ elif bld.is_asterix():
             'root_includes',
         ],
     )
+elif bld.is_nrf52840dk():
+    bld.objects(
+        name='driver_battery',
+        source=[
+            'battery/battery_common.c',
+            # PMIC provides this implementation
+        ],
+        use=[
+            'fw_includes',
+            'root_includes',
+        ],
+    )
+
+elif bld.is_nrf52840dk():
+    bld.objects(
+        name='driver_battery',
+        source=[
+            'battery/battery_common.c',
+            # PMIC provides this implementation
+        ],
+        use=[
+            'fw_includes',
+            'root_includes',
+        ],
+    )
 else:
     bld.objects(
         name='driver_battery',
@@ -409,6 +449,17 @@ if bld.is_silk() and not bld.env.QEMU:
     )
 
 if bld.is_asterix():
+    # FIXME: provide working implementation
+    bld.objects(
+        name='driver_lsm6dso',
+        source=[
+            'stubs/accel.c',
+        ],
+        use=[
+            'fw_includes',
+        ],
+    )
+if bld.is_nrf52840dk():
     # FIXME: provide working implementation
     bld.objects(
         name='driver_lsm6dso',
@@ -506,6 +557,21 @@ elif bld.is_snowy_compatible() or bld.is_cutts() or bld.is_robert():
         ],
     )
 elif bld.is_asterix():
+    # FIXME: driver should use platform agnostic SPI interface
+    bld.objects(
+        name='driver_display',
+        source=[
+            'display/sharp_ls013b7dh01/sharp_ls013b7dh01_nrf5.c',
+        ],
+        use=[
+            'driver_gpio',
+            'freertos',
+            'fw_includes',
+            'root_includes',
+            'hal_nordic',
+        ],
+    )
+elif bld.is_nrf52840dk():
     # FIXME: driver should use platform agnostic SPI interface
     bld.objects(
         name='driver_display',
@@ -651,6 +717,23 @@ elif bld.is_snowy_compatible():
         ],
     )
 elif bld.is_asterix():
+    bld.objects(
+        name='driver_flash',
+        source=[
+            'flash/flash_api.c',
+            'flash/flash_crc.c',
+            'flash/flash_erase.c',
+            'flash/cd_flash_driver.c',
+            'flash/gd25lq255e.c',
+        ],
+        use=[
+            'driver_qspi',
+            'freertos',
+            'fw_includes',
+            'root_includes',
+        ],
+    )
+elif bld.is_nrf52840dk():
     bld.objects(
         name='driver_flash',
         source=[
@@ -903,6 +986,18 @@ elif bld.is_asterix():
             'root_includes',
         ],
     )
+elif bld.is_nrf52840dk():
+    bld.objects(
+        name='driver_imu',
+        source=[
+            'imu/imu_asterix.c',
+        ],
+        use=[
+            'driver_lsm6dso',
+            'fw_includes',
+            'root_includes',
+        ],
+    )
 
 if bld.env.BOARD == "v2_0":
     bld.objects(
@@ -1105,6 +1200,18 @@ elif bld.is_silk():
         ],
     )
 elif bld.is_asterix():
+    bld.objects(
+        name='driver_pmic',
+        source=[
+            'pmic/npm1300.c',
+        ],
+        use=[
+            'driver_i2c',
+            'fw_includes',
+            'root_includes',
+        ],
+    )
+elif bld.is_nrf52840dk():
     bld.objects(
         name='driver_pmic',
         source=[
@@ -1475,6 +1582,7 @@ elif mcu_family == 'NRF52840':
         name='driver_uart',
         source=[
             'nrf5/uart.c',
+            'vibe.c'
         ],
         use=[
             'freertos',
@@ -1484,20 +1592,6 @@ elif mcu_family == 'NRF52840':
         ],
     )
 
-if bld.capability('HAS_VIBE_DRV2604'):
-    bld.objects(
-        name='driver_vibe',
-        source=[
-            'vibe_drv2604.c',
-        ],
-        use=[
-            'driver_gpio',
-            'driver_periph_config',
-            'driver_i2c'
-            'fw_includes',
-            'root_includes',
-        ],
-    )
 elif mcu_family in ('STM32F2', 'STM32F4', 'STM32F7'):
     bld.objects(
         name='driver_vibe',

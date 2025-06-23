@@ -150,7 +150,7 @@ static const RegulatoryFlags * prv_get_regulatory_flags(void) {
   return &s_regulatory_flags_spalding;
 #elif PLATFORM_SILK
   return &s_regulatory_flags_silk;
-#elif PLATFORM_ASTERIX
+#elif PLATFORM_ASTERIX || PLATFORM_NRF52840DK
   // TODO: add applicable flags
   return &s_regulatory_flags_fallback;
 #else
@@ -173,7 +173,7 @@ static const CertificationIds * prv_get_certification_ids(void) {
   } else {
     return &s_certification_ids_silk;
   }
-#elif PLATFORM_ASTERIX
+#elif PLATFORM_ASTERIX || PLATFORM_NRF52840DK
   // TODO: add real certification ids
   return &s_certification_ids_fallback;
 #else

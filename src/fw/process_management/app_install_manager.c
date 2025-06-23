@@ -625,7 +625,7 @@ static GColor prv_hard_coded_color_for_3rd_party_apps(Uuid *uuid) {
 
 
 static GColor prv_valid_color_from_uuid(GColor color, Uuid *uuid) {
-#if PLATFORM_TINTIN || PLATFORM_SILK || PLATFORM_ASTERIX
+#if PLATFORM_TINTIN || PLATFORM_SILK || PLATFORM_ASTERIX || PLATFORM_NRF52840DK
   return GColorClear;
 #endif
 
