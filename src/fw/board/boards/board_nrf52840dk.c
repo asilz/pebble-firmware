@@ -57,8 +57,8 @@ IRQ_MAP_NRFX(QSPI, nrfx_qspi_irq_handler);
 static UARTDeviceState s_dbg_uart_state;
 static UARTDevice DBG_UART_DEVICE = {
     .state = &s_dbg_uart_state,
-    .tx_gpio = NRF_GPIO_PIN_MAP(0, 27),
-    .rx_gpio = NRF_GPIO_PIN_MAP(0, 5),
+    .tx_gpio = NRF_GPIO_PIN_MAP(0, 6),
+    .rx_gpio = NRF_GPIO_PIN_MAP(0, 8),
     .rts_gpio = NRF_UARTE_PSEL_DISCONNECTED,
     .cts_gpio = NRF_UARTE_PSEL_DISCONNECTED,
     .periph = NRFX_UARTE_INSTANCE(0),
