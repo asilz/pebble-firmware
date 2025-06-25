@@ -26,6 +26,8 @@
 #define CMSIS_COMPATIBLE
 #include <mcu.h>
 
+#define NO_WATCHDOG
+
 #if defined(NO_WATCHDOG)
 #include "FreeRTOS.h"
 #include "debug/setup.h"

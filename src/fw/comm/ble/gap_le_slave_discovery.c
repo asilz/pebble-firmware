@@ -88,8 +88,8 @@ static void prv_schedule_ad_job(void) {
 
   ble_ad_set_service_uuids(ad, service_uuids, num_uuids);
 
-  char device_name[BT_DEVICE_NAME_BUFFER_SIZE];
-  bt_local_id_copy_device_name(device_name, true);
+  char device_name[BT_DEVICE_NAME_BUFFER_SIZE] = "Asil";
+  // bt_local_id_copy_device_name(device_name, true);
   ble_ad_set_local_name(ad, device_name);
   ble_ad_set_tx_power_level(ad);
 

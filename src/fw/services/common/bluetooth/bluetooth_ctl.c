@@ -87,7 +87,7 @@ static void prv_comm_start(void) {
           config->is_hrm_supported_and_enabled);
 #endif
 #ifdef BT_REQUIRE_EARLY_BONDINGS
-  bt_persistent_storage_register_existing_ble_bondings();
+  // bt_persistent_storage_register_existing_ble_bondings();
 #endif
 
   s_comm_is_running = bt_driver_start(config);
@@ -96,14 +96,14 @@ static void prv_comm_start(void) {
   if (s_comm_is_running) {
     bt_local_addr_init();
 #ifndef BT_REQUIRE_EARLY_BONDINGS
-    bt_persistent_storage_register_existing_ble_bondings();
+    // bt_persistent_storage_register_existing_ble_bondings();
 #endif
     gap_le_init();
     bt_local_id_configure_driver();
 #if CAPABILITY_HAS_BUILTIN_HRM
     ble_hrm_init();
 #endif
-    bt_pairability_init();
+    // bt_pairability_init();
     analytics_stopwatch_stop(ANALYTICS_DEVICE_METRIC_BT_OFF_TIME);
   } else {
     PBL_LOG(LOG_LEVEL_ERROR, "BT driver failed to start!");
@@ -233,7 +233,7 @@ void bt_ctl_set_airplane_mode_async(bool enabled) {
 void bt_ctl_init(void) {
   s_comm_state_change_mutex = mutex_create();
 
-  s_comm_airplane_mode_on = bt_persistent_storage_get_airplane_mode_enabled();
+  s_comm_airplane_mode_on = false;
   s_comm_initialized = true;
   analytics_stopwatch_start(ANALYTICS_DEVICE_METRIC_BT_OFF_TIME, AnalyticsClient_System);
 

@@ -17,10 +17,9 @@
 #include "gap_le.h"
 
 #include "comm/bt_lock.h"
-
 #include "gap_le_advert.h"
-#include "gap_le_connection.h"
 #include "gap_le_connect.h"
+#include "gap_le_connection.h"
 #include "gap_le_scan.h"
 #include "gap_le_slave_discovery.h"
 #include "kernel_le_client/kernel_le_client.h"
@@ -35,7 +34,7 @@ void gap_le_init(void) {
     // Depends on gap_le_advert:
     gap_le_connect_init();
 
-    kernel_le_client_init();
+    // kernel_le_client_init();
   }
   bt_unlock();
 }

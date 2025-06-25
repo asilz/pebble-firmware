@@ -315,7 +315,7 @@ void nimble_store_init(void) {
   ble_hs_cfg.store_read_cb = prv_nimble_store_read;
   ble_hs_cfg.store_write_cb = prv_nimble_store_write;
   ble_hs_cfg.store_delete_cb = prv_nimble_store_delete;
-  ble_hs_cfg.store_gen_key_cb = prv_nimble_store_gen_key;
+  ble_hs_cfg.store_gen_key_cb = NULL;
 }
 
 static void prv_convert_bonding_remote_to_store_val(const BleBonding *bonding,

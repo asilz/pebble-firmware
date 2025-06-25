@@ -16,13 +16,13 @@
 
 #include "local_addr.h"
 
-#include "comm/bt_lock.h"
-#include "system/logging.h"
-#include "system/passert.h"
-
 #include <bluetooth/bluetooth_types.h>
 #include <bluetooth/id.h>
 #include <btutil/bt_device.h>
+
+#include "comm/bt_lock.h"
+#include "system/logging.h"
+#include "system/passert.h"
 
 static uint32_t s_pra_cycling_pause_count;
 static BTDeviceAddress s_pinned_addr;
@@ -36,7 +36,7 @@ void bt_local_addr_pause_cycling(void) {
   bt_lock();
   {
     if (s_pra_cycling_pause_count == 0) {
-      PBL_LOG(LOG_LEVEL_INFO, "Pausing address cycling (pinned_addr="BT_DEVICE_ADDRESS_FMT")",
+      PBL_LOG(LOG_LEVEL_INFO, "Pausing address cycling (pinned_addr=" BT_DEVICE_ADDRESS_FMT ")",
               BT_DEVICE_ADDRESS_XPLODE(s_pinned_addr));
       prv_allow_cycling(false);
     }
@@ -51,7 +51,7 @@ void bt_local_addr_resume_cycling(void) {
     PBL_ASSERTN(s_pra_cycling_pause_count);
     --s_pra_cycling_pause_count;
     if (s_pra_cycling_pause_count == 0) {
-      PBL_LOG(LOG_LEVEL_INFO, "Resuming address cycling (pinned_addr="BT_DEVICE_ADDRESS_FMT")",
+      PBL_LOG(LOG_LEVEL_INFO, "Resuming address cycling (pinned_addr=" BT_DEVICE_ADDRESS_FMT ")",
               BT_DEVICE_ADDRESS_XPLODE(s_pinned_addr));
       prv_allow_cycling(true);
     }
@@ -79,13 +79,12 @@ void bt_local_addr_pin(const BTDeviceAddress *addr) {
   bool addresses_match = bt_device_address_equal(addr, &s_pinned_addr);
   bt_unlock();
 
-  PBL_LOG(LOG_LEVEL_INFO,
-          "Requested to pin address to "BT_DEVICE_ADDRESS_FMT " match=%u",
+  PBL_LOG(LOG_LEVEL_INFO, "Requested to pin address to " BT_DEVICE_ADDRESS_FMT " match=%u",
           BT_DEVICE_ADDRESS_XPLODE_PTR(addr), addresses_match);
 }
 
 void bt_local_addr_handle_bonding_change(BTBondingID bonding, BtPersistBondingOp op) {
-  bool has_pinned_ble_pairings = bt_persistent_storage_has_pinned_ble_pairings();
+  bool has_pinned_ble_pairings = false;
   if (has_pinned_ble_pairings != s_cycling_paused_due_to_dependent_bondings) {
     if (has_pinned_ble_pairings) {
       bt_local_addr_pause_cycling();
@@ -101,7 +100,7 @@ void bt_local_addr_init(void) {
   s_cycling_paused_due_to_dependent_bondings = false;
 
   // Load pinned address from settings file or generate one if it hasn't happened before:
-  if (!bt_persistent_storage_get_ble_pinned_address(&s_pinned_addr)) {
+  if (0 && !bt_persistent_storage_get_ble_pinned_address(&s_pinned_addr)) {
     if (bt_driver_id_generate_private_resolvable_address(&s_pinned_addr)) {
       bt_persistent_storage_set_ble_pinned_address(&s_pinned_addr);
     } else {
@@ -111,7 +110,7 @@ void bt_local_addr_init(void) {
   PBL_LOG(LOG_LEVEL_INFO, "Pinned address: " BT_DEVICE_ADDRESS_FMT,
           BT_DEVICE_ADDRESS_XPLODE(s_pinned_addr));
 
-  if (bt_persistent_storage_has_pinned_ble_pairings()) {
+  if (0 && bt_persistent_storage_has_pinned_ble_pairings()) {
     PBL_LOG(LOG_LEVEL_INFO, "Bonding that requires address pinning exists, applying pinned addr!");
     bt_local_addr_pause_cycling();
     s_cycling_paused_due_to_dependent_bondings = true;

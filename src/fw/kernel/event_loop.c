@@ -420,7 +420,7 @@ static NOINLINE void prv_launcher_main_loop_init(void) {
   app_manager_init();
   worker_manager_init();
   vibes_init();
-  battery_monitor_init();
+  // battery_monitor_init();
   evented_timer_init();
 #if CAPABILITY_HAS_MAGNETOMETER
   ecompass_service_init();
@@ -434,7 +434,7 @@ static NOINLINE void prv_launcher_main_loop_init(void) {
 
   modal_manager_init();
 
-  shell_event_loop_init();
+  // shell_event_loop_init();
 
 #if STATIONARY_MODE
   stationary_init();
@@ -445,16 +445,16 @@ static NOINLINE void prv_launcher_main_loop_init(void) {
   // if we are in launcher panic, don't turn on any extra services.
   const RunLevel run_level = launcher_panic_get_current_error() ? RunLevel_BareMinimum
                                                                 : RunLevel_Normal;
-  services_set_runlevel(run_level);
+  // services_set_runlevel(run_level);
 
   // emulate a button press-and-release to turn on/off the backlight
-  light_button_pressed();
-  light_button_released();
+  //light_button_pressed();
+  //light_button_released();
 
 #ifndef RECOVERY_FW
-  i18n_set_resource(RESOURCE_ID_STRINGS);
+  // i18n_set_resource(RESOURCE_ID_STRINGS);
 #endif
-  app_manager_start_first_app();
+  // app_manager_start_first_app();
 
 #ifndef RECOVERY_FW
   // Launch the default worker. If any of the buttons are down, or we hit 2 strikes already,

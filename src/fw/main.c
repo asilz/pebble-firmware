@@ -14,36 +14,40 @@
  * limitations under the License.
  */
 
-#include <stdio.h>
 #include <setjmp.h>
+#include <stdio.h>
 
-#include "debug/power_tracking.h"
-
+#include "applib/fonts/fonts.h"
+#include "applib/graphics/graphics.h"
+#include "applib/graphics/text.h"
+#include "applib/ui/ui.h"
+#include "applib/ui/window_stack_private.h"
 #include "board/board.h"
-
 #include "console/dbgserial.h"
 #include "console/dbgserial_input.h"
 #include "console/pulse.h"
-
-#include "drivers/clocksource.h"
-#include "drivers/rtc.h"
-#include "drivers/periph_config.h"
-#include "drivers/flash.h"
-#include "drivers/debounced_button.h"
-
+#include "console/serial_console.h"
+#include "debug/debug.h"
+#include "debug/power_tracking.h"
+#include "debug/setup.h"
 #include "drivers/accessory.h"
 #include "drivers/ambient_light.h"
 #include "drivers/backlight.h"
 #include "drivers/battery.h"
+#include "drivers/clocksource.h"
+#include "drivers/debounced_button.h"
 #include "drivers/display/display.h"
+#include "drivers/flash.h"
 #include "drivers/gpio.h"
 #include "drivers/hrm.h"
 #include "drivers/imu.h"
 #include "drivers/led_controller.h"
 #include "drivers/mic.h"
 #include "drivers/otp.h"
+#include "drivers/periph_config.h"
 #include "drivers/pmic.h"
 #include "drivers/pwr.h"
+#include "drivers/rtc.h"
 #include "drivers/spi.h"
 #include "drivers/system_flash.h"
 #include "drivers/task_watchdog.h"
@@ -52,70 +56,61 @@
 #include "drivers/vibe.h"
 #include "drivers/voltage_monitor.h"
 #include "drivers/watchdog.h"
-
-#include "resource/resource.h"
-#include "resource/system_resource.h"
-
-#include "kernel/util/stop.h"
-#include "kernel/util/task_init.h"
-#include "kernel/util/sleep.h"
+#include "kernel/event_loop.h"
 #include "kernel/events.h"
-#include "kernel/kernel_heap.h"
 #include "kernel/fault_handling.h"
+#include "kernel/kernel_applib_state.h"
+#include "kernel/kernel_heap.h"
 #include "kernel/memory_layout.h"
 #include "kernel/panic.h"
 #include "kernel/pulse_logging.h"
-#include "services/services.h"
+#include "kernel/ui/kernel_ui.h"
+#include "kernel/util/delay.h"
+#include "kernel/util/sleep.h"
+#include "kernel/util/stop.h"
+#include "kernel/util/task_init.h"
+#include "resource/resource.h"
+#include "resource/system_resource.h"
+#include "services/common/analytics/analytics.h"
 #include "services/common/clock.h"
 #include "services/common/compositor/compositor.h"
+#include "services/common/new_timer/new_timer.h"
+#include "services/common/new_timer/new_timer_service.h"
+#include "services/common/prf_update.h"
 #include "services/common/regular_timer.h"
 #include "services/common/system_task.h"
-#include "services/common/new_timer/new_timer_service.h"
-#include "services/common/new_timer/new_timer.h"
-#include "services/common/analytics/analytics.h"
-#include "services/common/prf_update.h"
-#include "kernel/ui/kernel_ui.h"
-#include "kernel/kernel_applib_state.h"
-#include "kernel/util/delay.h"
-#include "util/mbuf.h"
-#include "system/version.h"
-
-#include "kernel/event_loop.h"
-
-#include "applib/fonts/fonts.h"
-#include "applib/graphics/graphics.h"
-#include "applib/graphics/text.h"
-#include "applib/ui/ui.h"
-#include "applib/ui/window_stack_private.h"
-
-#include "console/serial_console.h"
+#include "services/services.h"
+#include "syscall/syscall_internal.h"
 #include "system/bootbits.h"
 #include "system/logging.h"
 #include "system/passert.h"
 #include "system/reset.h"
-
-#include "syscall/syscall_internal.h"
-
-#include "debug/debug.h"
-#include "debug/setup.h"
+#include "system/version.h"
+#include "util/mbuf.h"
 
 #define STM32F2_COMPATIBLE
 #define STM32F4_COMPATIBLE
 #define STM32F7_COMPATIBLE
 #define NRF5_COMPATIBLE
+#include <bluetooth/bluetooth_types.h>
+#include <bluetooth/bt_driver_advert.h>
+#include <bluetooth/init.h>
+#include <bluetooth/pebble_bt.h>
+#include <bluetooth/pebble_pairing_service.h>
+#include <btutil/bt_uuid.h>
 #include <mcu.h>
+#include <string.h>
+#include <util/attributes.h>
+#include <util/size.h>
 
 #include "FreeRTOS.h"
-#include "task.h"
-
+#include "applib/bluetooth/ble_ad_parse.h"
+#include "comm/ble/gap_le_slave_discovery.h"
 #include "mfg/mfg_info.h"
 #include "mfg/mfg_serials.h"
-
 #include "pebble_errors.h"
-
-#include <bluetooth/init.h>
-
-#include <string.h>
+#include "services/common/bluetooth/local_id.h"
+#include "task.h"
 
 /* here is as good as anywhere else ... */
 const int __attribute__((used)) uxTopUsedPriority = configMAX_PRIORITIES - 1;
@@ -125,9 +120,7 @@ static TimerID s_uptime_timer = TIMER_INVALID_ID;
 
 static void main_task(void *parameter);
 
-static void print_splash_screen(void)
-{
-
+static void print_splash_screen(void) {
 #if defined(MANUFACTURING_FW)
   PBL_LOG(LOG_LEVEL_ALWAYS, "__TINTIN__ - MANUFACTURING MODE");
 #elif defined(RECOVERY_FW)
@@ -142,13 +135,12 @@ static void print_splash_screen(void)
 
 #ifdef DUMP_GPIO_CFG_STATE
 static void dump_gpio_configuration_state(void) {
-  char name[2] = { 0 };
-  name[0] = 'A'; // GPIO Port A
+  char name[2] = {0};
+  name[0] = 'A';  // GPIO Port A
 
   GPIO_TypeDef *gpio_pin;
 
-  for (uint32_t gpio_addr = (uint32_t)GPIOA; gpio_addr <= (uint32_t)GPIOI;
-       gpio_addr += 0x400) {
+  for (uint32_t gpio_addr = (uint32_t)GPIOA; gpio_addr <= (uint32_t)GPIOI; gpio_addr += 0x400) {
     gpio_pin = (GPIO_TypeDef *)gpio_addr;
 
     gpio_use(gpio_pin);
@@ -164,8 +156,8 @@ static void dump_gpio_configuration_state(void) {
       mode >>= 2;
     }
 
-    dbgserial_putstr_fmt(buf, sizeof(buf), "Non Analog P%s cfg: 0x%"PRIx16,
-      name, (int)pin_cfg_mask);
+    dbgserial_putstr_fmt(buf, sizeof(buf), "Non Analog P%s cfg: 0x%" PRIx16, name,
+                         (int)pin_cfg_mask);
     name[0]++;
   }
 }
@@ -186,10 +178,10 @@ int main(void) {
   enable_mcu_debugging();
 #endif
 
-  extern void * __ISR_VECTOR_TABLE__;  // Defined in linker script
+  extern void *__ISR_VECTOR_TABLE__;  // Defined in linker script
   SCB->VTOR = (uint32_t)&__ISR_VECTOR_TABLE__;
 
-  NVIC_SetPriorityGrouping(3); // 4 bits for group priority; 0 bits for subpriority
+  NVIC_SetPriorityGrouping(3);  // 4 bits for group priority; 0 bits for subpriority
 
   enable_fault_handlers();
 
@@ -219,7 +211,8 @@ int main(void) {
   boot_bit_clear(BOOT_BIT_BOOTLOADER_TEST_A | BOOT_BIT_BOOTLOADER_TEST_B);
   psleep(10000);
   system_hard_reset();
-  for (;;) {}
+  for (;;) {
+  }
   // won't get here, rest gets optimized out
 #endif
 
@@ -230,17 +223,17 @@ int main(void) {
   extern uint32_t __kernel_main_stack_start__[];
   extern uint32_t __kernel_main_stack_size__[];
   extern uint32_t __stack_guard_size__[];
-  const uint32_t kernel_main_stack_words = ( (uint32_t)__kernel_main_stack_size__
-                            - (uint32_t) __stack_guard_size__ ) / sizeof(portSTACK_TYPE);
+  const uint32_t kernel_main_stack_words =
+      ((uint32_t)__kernel_main_stack_size__ - (uint32_t)__stack_guard_size__) /
+      sizeof(portSTACK_TYPE);
 
   TaskParameters_t task_params = {
-    .pvTaskCode = main_task,
-    .pcName = "KernelMain",
-    .usStackDepth = kernel_main_stack_words,
-    .uxPriority = (tskIDLE_PRIORITY + 3) | portPRIVILEGE_BIT,
-    .puxStackBuffer = (void*)(uintptr_t)((uint32_t)__kernel_main_stack_start__
-                                          + (uint32_t)__stack_guard_size__)
-  };
+      .pvTaskCode = main_task,
+      .pcName = "KernelMain",
+      .usStackDepth = kernel_main_stack_words,
+      .uxPriority = (tskIDLE_PRIORITY + 3) | portPRIVILEGE_BIT,
+      .puxStackBuffer = (void *)(uintptr_t)((uint32_t)__kernel_main_stack_start__ +
+                                            (uint32_t)__stack_guard_size__)};
 
   pebble_task_create(PebbleTask_KernelMain, &task_params, NULL);
 
@@ -252,29 +245,25 @@ int main(void) {
 #if !MICRO_FAMILY_NRF5
   periph_config_enable(PWR, RCC_APB1Periph_PWR);
 #endif
-  //pwr_flash_power_down_stop_mode(true /* power_down */);
+  // pwr_flash_power_down_stop_mode(true /* power_down */);
 #if !MICRO_FAMILY_NRF5
   periph_config_disable(PWR, RCC_APB1Periph_PWR);
 #endif
 
   vTaskStartScheduler();
-  for(;;);
+  for (;;);
 }
 
-static void watchdog_timer_callback(void* data) {
-  task_watchdog_bit_set(PebbleTask_NewTimers);
-}
+static void watchdog_timer_callback(void *data) { task_watchdog_bit_set(PebbleTask_NewTimers); }
 
-static void vcom_timer_callback(void* data) {
-  display_pulse_vcom();
-}
+static void vcom_timer_callback(void *data) { display_pulse_vcom(); }
 
 static void register_system_timers(void) {
-  static RegularTimerInfo watchdog_timer = { .list_node = { 0, 0 }, .cb = watchdog_timer_callback };
+  static RegularTimerInfo watchdog_timer = {.list_node = {0, 0}, .cb = watchdog_timer_callback};
   regular_timer_add_seconds_callback(&watchdog_timer);
 
   if (BOARD_CONFIG.lcd_com.gpio != 0) {
-    static RegularTimerInfo vcom_timer = { .list_node = { 0, 0 }, .cb = vcom_timer_callback };
+    static RegularTimerInfo vcom_timer = {.list_node = {0, 0}, .cb = vcom_timer_callback};
     regular_timer_add_seconds_callback(&vcom_timer);
   }
 }
@@ -291,7 +280,7 @@ static void init_drivers(void) {
   voltage_monitor_init();
 
   battery_init();
-  //vibe_init();
+  // vibe_init();
 
 #if CAPABILITY_HAS_ACCESSORY_CONNECTOR
   accessory_init();
@@ -299,12 +288,12 @@ static void init_drivers(void) {
 
 #if CAPABILITY_HAS_PMIC
   pmic_init();
-#endif // CAPABILITY_HAS_PMIC
+#endif  // CAPABILITY_HAS_PMIC
 
   flash_init();
   flash_sleep_when_idle(true);
   flash_enable_write_protection();
-  flash_prf_set_protection(true);
+  // flash_prf_set_protection(true);
 
 #if CAPABILITY_HAS_MICROPHONE
   mic_init(MIC);
@@ -335,13 +324,13 @@ static void clear_reset_loop_detection_bits(void) {
   boot_bit_clear(BOOT_BIT_RESET_LOOP_DETECT_THREE);
 }
 
-static void uptime_callback(void* data) {
+static void uptime_callback(void *data) {
   PBL_LOG_VERBOSE("Uptime reached 15 minutes, set stable bit.");
   new_timer_delete(s_uptime_timer);
   boot_bit_set(BOOT_BIT_FW_STABLE);
 }
 
-static void prv_low_power_debug_config_callback(void* data) {
+static void prv_low_power_debug_config_callback(void *data) {
   new_timer_delete(s_lowpower_timer);
 
   // Turn off sleep and stop mode debugging if it is not explicitly enabled
@@ -433,20 +422,20 @@ static NOINLINE void prv_main_task_init(void) {
   mfg_info_update_constant_data();
 #endif
 
-  debug_init(s_mcu_reboot_reason);
+  // debug_init(s_mcu_reboot_reason);
 
   services_early_init();
 
-  debug_print_last_launched_app();
+  // debug_print_last_launched_app();
 
   // Do this early before things can screw ith it.
-  check_prf_update();
+  // check_prf_update();
 
   // When there are new system resources waiting to be installed, this call
   // will actually install them:
-  resource_init();
+  // resource_init();
 
-  system_resource_init();
+  // system_resource_init();
 
 #if CAPABILITY_HAS_BUILTIN_HRM
   if (mfg_info_is_hrm_present()) {
@@ -461,10 +450,11 @@ static NOINLINE void prv_main_task_init(void) {
   display_init();
 
   // Use the MFG calibrated display offset to adjust the display
-  GPoint mfg_offset = mfg_info_get_disp_offsets();
-  display_set_offset(mfg_offset);
+  // GPoint mfg_offset = mfg_info_get_disp_offsets();
+  // display_set_offset(mfg_offset);
   // Log display offsets for use in contact support logs
-  PBL_LOG(LOG_LEVEL_INFO, "MFG Display Offsets (%"PRIi16",%"PRIi16").", mfg_offset.x, mfg_offset.y);
+  // PBL_LOG(LOG_LEVEL_INFO, "MFG Display Offsets (%"PRIi16",%"PRIi16").", mfg_offset.x,
+  // mfg_offset.y);
 
   // Can't use the compositor framebuffer until the compositor is initialized
   compositor_init();
@@ -488,8 +478,8 @@ static NOINLINE void prv_main_task_init(void) {
   // seconds to give OpenOCD time to start and still able to connect when it is
   // ready to flash in the new image via JTAG
   s_lowpower_timer = new_timer_create();
-  new_timer_start(s_lowpower_timer,
-                  10 * 1000, prv_low_power_debug_config_callback, NULL, 0 /*flags*/);
+  new_timer_start(s_lowpower_timer, 10 * 1000, prv_low_power_debug_config_callback, NULL,
+                  0 /*flags*/);
 
   s_uptime_timer = new_timer_create();
   new_timer_start(s_uptime_timer, 15 * 60 * 1000, uptime_callback, NULL, 0 /*flags*/);
@@ -511,5 +501,10 @@ static NOINLINE void prv_main_task_init(void) {
 
 static void main_task(void *parameter) {
   prv_main_task_init();
-  launcher_main_loop();
+  // launcher_main_loop();
+
+  bt_ctl_set_enabled(true);
+  gap_le_slave_set_discoverable(true);
+
+  for (;;);
 }

@@ -2078,7 +2078,7 @@ status_t pfs_init(bool run_filesystem_check) {
     if (!pfs_active()) {
       // either we have downgraded or there is no data on the flash
       PBL_LOG(LOG_LEVEL_INFO, "PFS not active ... formatting");
-      pfs_format(true /* write erase headers */);
+      // pfs_format(true /* write erase headers */);
     }
   }
 
@@ -2099,7 +2099,7 @@ status_t pfs_init(bool run_filesystem_check) {
     // files will be written on then flash. We could also try to force apps to
     // be flushed out of the FS in an attempt to free up space since they are
     // only being cached on the FS
-    pfs_format(true);
+    // pfs_format(true);
   }
 
   // get us off to a good start by ensuring there is some pre-erased space on

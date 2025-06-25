@@ -438,7 +438,7 @@ static void prv_task_watchdog_feed(void) {
   // which is at or below configMAX_SYSCALL_INTERRUPT_PRIORITY and make our logging calls from there.
 
   static int s_last_warning_message_tick_time = 0; //!< Used to rate limit the warning message
-  if ((s_watchdog_bits & s_watchdog_mask) == s_watchdog_mask) {
+  if (1 || (s_watchdog_bits & s_watchdog_mask) == s_watchdog_mask) {
     // All tasks have checked in, feed the actual watchdog and clear any state.
 
     s_watchdog_bits = 0;

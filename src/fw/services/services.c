@@ -30,7 +30,7 @@
 
 void services_early_init(void) {
 #ifndef RECOVERY_FW
-  services_normal_early_init();
+  // services_normal_early_init();
 #endif
 }
 
@@ -38,7 +38,7 @@ void services_init(void) {
   services_common_init();
 
 #ifndef RECOVERY_FW
-  services_normal_init();
+  // services_normal_init();
 #endif
 }
 

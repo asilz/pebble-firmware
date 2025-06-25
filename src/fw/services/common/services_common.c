@@ -54,11 +54,11 @@ void services_common_init(void) {
   cron_service_init();
 
   shared_prf_storage_init();
-  bt_persistent_storage_init();
+  // bt_persistent_storage_init();
 
   comm_default_kernel_sender_init();
-  comm_session_app_session_capabilities_init();
-  comm_session_init();
+  // comm_session_app_session_capabilities_init();
+  // comm_session_init();
 
   bt_ctl_init();
 

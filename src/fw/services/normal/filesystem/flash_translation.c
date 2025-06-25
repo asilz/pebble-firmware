@@ -136,7 +136,7 @@ void ftl_populate_region_list(void) {
   pfs_reboot_cleanup();
 
   for (unsigned int i = s_next_region_idx; i < TOTAL_NUM_FLASH_REGIONS; i++) {
-    ftl_add_region(s_region_list[i].start, s_region_list[i].end, true);
+    ftl_add_region(s_region_list[i].start, s_region_list[i].end, false);
   }
 
   PBL_LOG(LOG_LEVEL_DEBUG, "Filesystem: New size - %"PRId32" Kb", (s_ftl_size / 1024));
