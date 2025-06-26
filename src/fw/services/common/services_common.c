@@ -54,11 +54,11 @@ void services_common_init(void) {
   cron_service_init();
 
   shared_prf_storage_init();
-  // bt_persistent_storage_init();
+  bt_persistent_storage_init();
 
   comm_default_kernel_sender_init();
-  // comm_session_app_session_capabilities_init();
-  // comm_session_init();
+  comm_session_app_session_capabilities_init();
+  comm_session_init();
 
   bt_ctl_init();
 
@@ -77,27 +77,25 @@ void services_common_init(void) {
 }
 
 static struct ServiceRunLevelSetting s_runlevel_settings[] = {
-  {
-    .set_enable_fn = accel_manager_enable,
-    .enable_mask = R_Stationary | R_FirmwareUpdate | R_Normal,
-  },
-  {
-    .set_enable_fn = light_allow,
-    .enable_mask = R_LowPower | R_FirmwareUpdate | R_Normal,
-  },
-  {
-    .set_enable_fn = vibe_service_set_enabled,
-    .enable_mask = R_LowPower | R_FirmwareUpdate | R_Normal
-  },
-  {
-    .set_enable_fn = bt_ctl_set_enabled,
-    .enable_mask = R_FirmwareUpdate | R_Normal,
-  },
+    {
+        .set_enable_fn = accel_manager_enable,
+        .enable_mask = R_Stationary | R_FirmwareUpdate | R_Normal,
+    },
+    {
+        .set_enable_fn = light_allow,
+        .enable_mask = R_LowPower | R_FirmwareUpdate | R_Normal,
+    },
+    {.set_enable_fn = vibe_service_set_enabled,
+     .enable_mask = R_LowPower | R_FirmwareUpdate | R_Normal},
+    {
+        .set_enable_fn = bt_ctl_set_enabled,
+        .enable_mask = R_FirmwareUpdate | R_Normal,
+    },
 #if CAPABILITY_HAS_BUILTIN_HRM
-  {
-    .set_enable_fn = hrm_manager_enable,
-    .enable_mask = R_Normal,
-  },
+    {
+        .set_enable_fn = hrm_manager_enable,
+        .enable_mask = R_Normal,
+    },
 #endif
 };
 
@@ -107,4 +105,3 @@ void services_common_set_runlevel(RunLevel runlevel) {
     service->set_enable_fn(((1 << runlevel) & service->enable_mask) != 0);
   }
 }
-

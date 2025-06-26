@@ -14,26 +14,17 @@
  * limitations under the License.
  */
 
-
 #include "drivers/flash.h"
 #include "drivers/flash/flash_impl.h"
 
+status_t return_success(void) { return S_SUCCESS; }
 
-status_t return_success(void) {
-  return S_SUCCESS;
-}
+status_t return_error(void) { return E_ERROR; }
 
-status_t return_error(void) {
-  return E_ERROR;
-}
-
-status_t flash_impl_init(bool coredump_mode) {
-  return S_SUCCESS;
-}
+status_t flash_impl_init(bool coredump_mode) { return S_SUCCESS; }
 
 void flash_impl_use(void) {}
 void flash_impl_release_many(uint32_t num_locks) {}
-
 
 int get_subsector_base_calls = 0;
 FlashAddress flash_impl_get_subsector_base_address(FlashAddress addr) {
@@ -82,55 +73,30 @@ status_t flash_impl_blank_check_sector(FlashAddress addr) {
   return blank_check_sector_return;
 }
 
-status_t flash_impl_enter_low_power_mode(void) {
-  return S_SUCCESS;
-}
+status_t flash_impl_enter_low_power_mode(void) { return S_SUCCESS; }
 
-status_t flash_impl_exit_low_power_mode(void) {
-  return S_SUCCESS;
-}
+status_t flash_impl_exit_low_power_mode(void) { return S_SUCCESS; }
 
-status_t flash_impl_erase_suspend(FlashAddress addr) {
-  return S_SUCCESS;
-}
+status_t flash_impl_erase_suspend(FlashAddress addr) { return S_SUCCESS; }
 
-status_t flash_impl_erase_resume(FlashAddress addr) {
-  return S_SUCCESS;
-}
+status_t flash_impl_erase_resume(FlashAddress addr) { return S_SUCCESS; }
 
-uint32_t flash_impl_get_typical_subsector_erase_duration_ms(void) {
-  return 100;
-}
+uint32_t flash_impl_get_typical_subsector_erase_duration_ms(void) { return 100; }
 
-uint32_t flash_impl_get_typical_sector_erase_duration_ms(void) {
-  return 100;
-}
+uint32_t flash_impl_get_typical_sector_erase_duration_ms(void) { return 100; }
 
-status_t flash_impl_get_write_status(void) {
-  return S_SUCCESS;
-}
+status_t flash_impl_get_write_status(void) { return S_SUCCESS; }
 
-status_t flash_impl_read_sync(void *buffer, FlashAddress addr, size_t len) {
-  return E_UNKNOWN;
-}
+status_t flash_impl_read_sync(void *buffer, FlashAddress addr, size_t len) { return E_UNKNOWN; }
 
-status_t flash_impl_set_burst_mode(bool enable) {
-  return E_UNKNOWN;
-}
+status_t flash_impl_set_burst_mode(bool enable) { return E_UNKNOWN; }
 
-status_t flash_impl_unprotect(void) {
-  return S_SUCCESS;
-}
+status_t flash_impl_unprotect(void) { return S_SUCCESS; }
 
-int flash_impl_write_page_begin(const void *buffer, FlashAddress addr,
-                                size_t len) {
-  return len;
-}
+int flash_impl_write_page_begin(const void *buffer, FlashAddress addr, size_t len) { return len; }
 
-void flash_impl_enable_write_protection(void) {
-}
+void flash_impl_enable_write_protection(void) {}
 
-status_t flash_impl_write_protect(FlashAddress start_sector,
-                                  FlashAddress end_sector) {
+status_t flash_impl_write_protect(FlashAddress start_sector, FlashAddress end_sector) {
   return S_SUCCESS;
 }

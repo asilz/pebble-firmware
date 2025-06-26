@@ -15,12 +15,12 @@
  */
 
 #include "services.h"
-#include "runlevel.h"
 
 #include <stdlib.h>
 #include <string.h>
 
 #include "console/prompt.h"
+#include "runlevel.h"
 #include "services/common/services_common.h"
 #include "services/normal/services_normal.h"
 #include "system/logging.h"
@@ -30,7 +30,7 @@
 
 void services_early_init(void) {
 #ifndef RECOVERY_FW
-  // services_normal_early_init();
+  services_normal_early_init();
 #endif
 }
 

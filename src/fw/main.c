@@ -280,7 +280,7 @@ static void init_drivers(void) {
   voltage_monitor_init();
 
   battery_init();
-  // vibe_init();
+  vibe_init();
 
 #if CAPABILITY_HAS_ACCESSORY_CONNECTOR
   accessory_init();
@@ -422,18 +422,18 @@ static NOINLINE void prv_main_task_init(void) {
   mfg_info_update_constant_data();
 #endif
 
-  // debug_init(s_mcu_reboot_reason);
+  debug_init(s_mcu_reboot_reason);
 
   services_early_init();
 
-  // debug_print_last_launched_app();
+  debug_print_last_launched_app();
 
   // Do this early before things can screw ith it.
-  // check_prf_update();
+  check_prf_update();
 
   // When there are new system resources waiting to be installed, this call
   // will actually install them:
-  // resource_init();
+  resource_init();
 
   // system_resource_init();
 
@@ -450,11 +450,11 @@ static NOINLINE void prv_main_task_init(void) {
   display_init();
 
   // Use the MFG calibrated display offset to adjust the display
-  // GPoint mfg_offset = mfg_info_get_disp_offsets();
-  // display_set_offset(mfg_offset);
+  GPoint mfg_offset = mfg_info_get_disp_offsets();
+  display_set_offset(mfg_offset);
   // Log display offsets for use in contact support logs
-  // PBL_LOG(LOG_LEVEL_INFO, "MFG Display Offsets (%"PRIi16",%"PRIi16").", mfg_offset.x,
-  // mfg_offset.y);
+  PBL_LOG(LOG_LEVEL_INFO, "MFG Display Offsets (%" PRIi16 ",%" PRIi16 ").", mfg_offset.x,
+          mfg_offset.y);
 
   // Can't use the compositor framebuffer until the compositor is initialized
   compositor_init();
