@@ -24,7 +24,12 @@ def build(bld):
 
     nimble_sources = bld.path.ant_glob(
         [
-            'mynewt-nimble/porting/nimble/src/*.c',
+            'mynewt-nimble/porting/nimble/src/os_mbuf.c',
+            'mynewt-nimble/porting/nimble/src/os_mempool.c',
+            'mynewt-nimble/porting/nimble/src/nimble_port.c',
+            'mynewt-nimble/porting/nimble/src/endian.c',
+            'mynewt-nimble/porting/nimble/src/mem.c',
+            'mynewt-nimble/porting/nimble/src/os_msys_init.c',
             'mynewt-nimble/nimble/src/*.c',
             'mynewt-nimble/nimble/host/src/*.c',
             'mynewt-nimble/nimble/host/util/src/*.c',
@@ -71,28 +76,35 @@ def build(bld):
 
     elif bld.env.bt_controller == 'nrf52':
         nimble_sources += bld.path.ant_glob([
-            'mynewt-nimble/nimble/controller/src/*.c',
-            'mynewt-nimble/nimble/drivers/nrf5x/src/*.c',
-            'mynewt-nimble/nimble/drivers/nrf5x/src/nrf52/*.c',
-            'mynewt-nimble/porting/nimble/src/hal_timer.c',
-            'port/src/nrf52.c',
+            'mynewt-nimble/nimble/transport/sdc/src/*.c',
+            #'mynewt-nimble/nimble/drivers/nrf5x/src/*.c',
+            #'mynewt-nimble/nimble/drivers/nrf5x/src/nrf52/*.c',
+            #'mynewt-nimble/porting/nimble/src/hal_timer.c',
+            #'port/src/nrf52.c',
         ])
 
         nimble_includes = [
-            'port/include/nrf52',
-            'mynewt-nimble/nimble/controller/include',
-            'mynewt-nimble/nimble/drivers/nrf5x/include',
+            #'port/include/nrf52',
+            'mynewt-nimble/nimble/transport/sdc/include',
+            #'mynewt-nimble/nimble/drivers/nrf5x/include',
         ] + nimble_includes
 
         nimble_env.append_value('DEFINES', [
             'FREERTOS=1',
-            'NIMBLE_CFG_CONTROLLER=1',
+            'NIMBLE_CFG_CONTROLLER=0',
         ])
 
-        nimble_export_defines.append('NIMBLE_CFG_CONTROLLER=1')
+        nimble_export_defines.append('NIMBLE_CFG_CONTROLLER=0')
 
         nimble_use.append('hal_nordic')
 
+    bld.read_stlib('mpsl', paths=['/home/aszo/Documents/fork/pebble-firmware/third_party/nimble/mynewt-nimble/nimble/transport/sdc/src'])
+    nimble_use.append('sdc')
+    nimble_use.append('mpsl')
+    nimble_use.append('mpsl_fem_common')
+    bld.read_stlib('sdc', paths=['/home/aszo/Documents/fork/pebble-firmware/third_party/nimble/mynewt-nimble/nimble/transport/sdc/src'])
+    bld.read_stlib('mpsl_fem_common', paths=['/home/aszo/Documents/fork/pebble-firmware/third_party/nimble/mynewt-nimble/nimble/transport/sdc/src'])
+    
     bld.objects(
         source=nimble_sources,
         target='nimble',
@@ -103,3 +115,4 @@ def build(bld):
         export_defines=nimble_export_defines,
         env=nimble_env,
     )
+    
