@@ -98,12 +98,12 @@ def build(bld):
 
         nimble_use.append('hal_nordic')
 
-    bld.read_stlib('mpsl', paths=['/home/aszo/Documents/fork/pebble-firmware/third_party/nimble/mynewt-nimble/nimble/transport/sdc/src'])
+    bld.read_stlib('mpsl', paths=['mynewt-nimble/nimble/transport/sdc/src'])
     nimble_use.append('sdc')
     nimble_use.append('mpsl')
     nimble_use.append('mpsl_fem_common')
-    bld.read_stlib('sdc', paths=['/home/aszo/Documents/fork/pebble-firmware/third_party/nimble/mynewt-nimble/nimble/transport/sdc/src'])
-    bld.read_stlib('mpsl_fem_common', paths=['/home/aszo/Documents/fork/pebble-firmware/third_party/nimble/mynewt-nimble/nimble/transport/sdc/src'])
+    bld.read_stlib('sdc', paths=['mynewt-nimble/nimble/transport/sdc/src'])
+    bld.read_stlib('mpsl_fem_common', paths=['mynewt-nimble/nimble/transport/sdc/src'])
     
     bld.objects(
         source=nimble_sources,
