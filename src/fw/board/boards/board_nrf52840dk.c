@@ -1,5 +1,6 @@
 #include <nrfx_i2s.h>
 
+#include "../../third_party/nimble/mynewt-nimble/nimble/transport/sdc/include/sdc/mpsl.h"
 #include "board/board.h"
 #include "drivers/flash/qspi_flash_definitions.h"
 #include "drivers/gpio.h"
@@ -67,6 +68,12 @@ static UARTDevice DBG_UART_DEVICE = {
 UARTDevice *const DBG_UART = &DBG_UART_DEVICE;
 IRQ_MAP_NRFX(UART0_UARTE0, nrfx_uarte_0_irq_handler);
 /* PERIPHERAL ID 8 */
+
+IRQ_MAP_NRFX(TIMER0, MPSL_IRQ_TIMER0_Handler);
+IRQ_MAP_NRFX(RTC0, MPSL_IRQ_RTC0_Handler);
+IRQ_MAP_NRFX(CLOCK_POWER, MPSL_IRQ_CLOCK_Handler);
+IRQ_MAP_NRFX(RADIO, MPSL_IRQ_RADIO_Handler);
+IRQ_MAP_NRFX(EGU5_SWI5, mpsl_low_priority_process);
 
 /* buttons */
 IRQ_MAP_NRFX(TIMER1, nrfx_timer_1_irq_handler);
