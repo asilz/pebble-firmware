@@ -14,42 +14,33 @@
  * limitations under the License.
  */
 
-#include "board/board.h"
-
 #include "gap_le_slave_discovery.h"
-#include "gap_le_advert.h"
 
-#include "applib/bluetooth/ble_ad_parse.h"
-
-#include "comm/ble/ble_log.h"
-#include "comm/bt_lock.h"
-
-#include "git_version.auto.h"
-
-#include "mfg/mfg_info.h"
-
-#include "mfg/mfg_serials.h"
-
-#include "services/common/bluetooth/local_id.h"
-#include "services/normal/bluetooth/ble_hrm.h"
-
-#include "system/passert.h"
-#include "system/version.h"
-
+#include <bluetooth/bluetooth_types.h>
 #include <bluetooth/pebble_bt.h>
 #include <bluetooth/pebble_pairing_service.h>
-#include <bluetooth/bluetooth_types.h>
 #include <btutil/bt_uuid.h>
 #include <util/attributes.h>
 #include <util/size.h>
+
+#include "applib/bluetooth/ble_ad_parse.h"
+#include "board/board.h"
+#include "comm/ble/ble_log.h"
+#include "comm/bt_lock.h"
+#include "gap_le_advert.h"
+#include "git_version.auto.h"
+#include "mfg/mfg_info.h"
+#include "mfg/mfg_serials.h"
+#include "services/common/bluetooth/local_id.h"
+#include "services/normal/bluetooth/ble_hrm.h"
+#include "system/passert.h"
+#include "system/version.h"
 
 static GAPLEAdvertisingJobRef s_discovery_advert_job;
 
 // -----------------------------------------------------------------------------
 //! Handles unscheduling of the discovery advertisement job.
-static void prv_job_unschedule_callback(GAPLEAdvertisingJobRef job,
-                                        bool completed,
-                                        void *cb_data) {
+static void prv_job_unschedule_callback(GAPLEAdvertisingJobRef job, bool completed, void *cb_data) {
   // Cleanup:
   s_discovery_advert_job = NULL;
 }
@@ -110,64 +101,57 @@ static void prv_schedule_ad_job(void) {
     union {
       uint8_t flags;
       struct {
-        bool is_running_recovery_firmware:1;
-        bool is_first_use:1;
+        bool is_running_recovery_firmware : 1;
+        bool is_first_use : 1;
       };
     };
   } mfg_data = {
-    .payload_type = 0 /* For future proofing. Only one type for now.*/,
-    .hw_platform = TINTIN_METADATA.hw_platform,
-    .color = mfg_info_get_watch_color(),
-    .fw_version = {
-      .major = GIT_MAJOR_VERSION,
-      .minor = GIT_MINOR_VERSION,
-      .patch = GIT_PATCH_VERSION,
-    },
-    .is_running_recovery_firmware = TINTIN_METADATA.is_recovery_firmware,
-    .is_first_use = false, // !getting_started_is_complete(), // TODO
+      .payload_type = 0 /* For future proofing. Only one type for now.*/,
+      .hw_platform = TINTIN_METADATA.hw_platform,
+      .color = 4,
+      .fw_version =
+          {
+              .major = GIT_MAJOR_VERSION,
+              .minor = GIT_MINOR_VERSION,
+              .patch = GIT_PATCH_VERSION,
+          },
+      .is_running_recovery_firmware = TINTIN_METADATA.is_recovery_firmware,
+      .is_first_use = false,  // !getting_started_is_complete(), // TODO
   };
-  memcpy(&mfg_data.serial_number,
-         mfg_get_serial_number(),
-         MFG_SERIAL_NUMBER_SIZE);
+  memcpy(&mfg_data.serial_number, mfg_get_serial_number(), MFG_SERIAL_NUMBER_SIZE);
 
-  ble_ad_set_manufacturer_specific_data(ad,
-                                       BT_VENDOR_ID,
-                                       (const uint8_t *) &mfg_data,
-                                       sizeof(struct ManufacturerSpecificData));
+  ble_ad_set_manufacturer_specific_data(ad, BT_VENDOR_ID, (const uint8_t *)&mfg_data,
+                                        sizeof(struct ManufacturerSpecificData));
 #if !RECOVERY_FW
   // Initial high-rate period of 5 minutes long, then go slow for power savings:
   const GAPLEAdvertisingJobTerm advert_terms[] = {
-    {
-      .min_interval_slots = 160, // 100ms
-      .max_interval_slots = 320, // 200ms
-      .duration_secs = 5 * 60, // 5 minutes
-    },
-    {
-      .min_interval_slots = 1636, // 1022.5ms
-      .max_interval_slots = 2056, // 1285ms
-      .duration_secs = GAPLE_ADVERTISING_DURATION_INFINITE,
-    }
-  };
+      {
+          .min_interval_slots = 160,  // 100ms
+          .max_interval_slots = 320,  // 200ms
+          .duration_secs = 5 * 60,    // 5 minutes
+      },
+      {
+          .min_interval_slots = 1636,  // 1022.5ms
+          .max_interval_slots = 2056,  // 1285ms
+          .duration_secs = GAPLE_ADVERTISING_DURATION_INFINITE,
+      }};
 
-  s_discovery_advert_job = gap_le_advert_schedule(ad,
-                         advert_terms,
-                         sizeof(advert_terms)/sizeof(GAPLEAdvertisingJobTerm),
-                         prv_job_unschedule_callback,
-                         NULL,
-                         GAPLEAdvertisingJobTagDiscovery);
+  s_discovery_advert_job = gap_le_advert_schedule(
+      ad, advert_terms, sizeof(advert_terms) / sizeof(GAPLEAdvertisingJobTerm),
+      prv_job_unschedule_callback, NULL, GAPLEAdvertisingJobTagDiscovery);
 
 #else
   BLE_LOG_DEBUG("Running at PRF advertising rate for LE discovery");
   // For PRF, just use a fast advertising rate indefinitely so the watch gets
   // discovered as fast as possible
   const GAPLEAdvertisingJobTerm advert_term = {
-    .min_interval_slots = 244, // 152.5ms
-    .max_interval_slots = 256, // 160ms
-    .duration_secs = GAPLE_ADVERTISING_DURATION_INFINITE,
+      .min_interval_slots = 244,  // 152.5ms
+      .max_interval_slots = 256,  // 160ms
+      .duration_secs = GAPLE_ADVERTISING_DURATION_INFINITE,
   };
 
   s_discovery_advert_job = gap_le_advert_schedule(
-      ad, &advert_term, sizeof(advert_term)/sizeof(GAPLEAdvertisingJobTerm),
+      ad, &advert_term, sizeof(advert_term) / sizeof(GAPLEAdvertisingJobTerm),
       prv_job_unschedule_callback, NULL, GAPLEAdvertisingJobTagDiscovery);
 
 #endif
