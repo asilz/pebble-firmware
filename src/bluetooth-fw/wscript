@@ -21,6 +21,8 @@ def _recurse(ctx):
         ctx.recurse('qemu')
     elif ctx.env.bt_controller == 'nrf52':
         ctx.recurse('nimble')
+    elif ctx.env.bt_controller == 'nrf54':
+        ctx.recurse('nimble')
     else:
         ctx.fatal('Invalid bt controller {}'.format(ctx.env.bt_controller))
 

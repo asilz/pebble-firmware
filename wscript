@@ -82,7 +82,8 @@ def options(opt):
                              'robert_evt',
                              'robert_es',
                              'asterix',
-                             'nrf52840dk',],
+                             'nrf52840dk',
+                             'nrf54l15dk',],
                    help='Which board we are targeting '
                         'bb2, snowy_dvt, spalding, silk...')
     opt.add_option('--jtag', action='store', default=None, dest='jtag',  # default is bb2 (below)
@@ -431,7 +432,7 @@ def configure(conf):
         conf.env.JTAG = 'swd_ftdi'
     elif conf.options.board in ('asterix'):
         conf.env.JTAG = 'swd_cmsisdap'
-    elif conf.options.board in ('nrf52840dk'):
+    elif conf.options.board in ('nrf52840dk', 'nrf54l15dk'):
         conf.env.JTAG = 'swd_jlink'
     else:
         # default to bb2
@@ -453,7 +454,7 @@ def configure(conf):
     elif conf.is_snowy_compatible():
         conf.env.PLATFORM_NAME = 'basalt'
         conf.env.MIN_SDK_VERSION = 2
-    elif conf.is_silk() or conf.is_asterix() or conf.is_nrf52840dk():
+    elif conf.is_silk() or conf.is_asterix() or conf.is_nrf52840dk() or conf.is_nrf54l15dk():
         conf.env.PLATFORM_NAME = 'diorite'
         conf.env.MIN_SDK_VERSION = 2
     elif conf.is_cutts() or conf.is_robert():
@@ -473,6 +474,8 @@ def configure(conf):
         conf.env.MICRO_FAMILY = 'STM32F7'
     elif conf.is_asterix() or conf.is_nrf52840dk():
         conf.env.MICRO_FAMILY = 'NRF52840'
+    elif conf.is_nrf54l15dk():
+        conf.env.MICRO_FAMILY = 'NRF54L15'
     else:
         conf.fatal('No micro family specified for {}!'.format(conf.options.board))
 
@@ -519,6 +522,9 @@ def configure(conf):
     elif conf.is_asterix() or conf.is_nrf52840dk():
         conf.env.bt_controller = 'nrf52'
         conf.env.append_value('DEFINES', ['BT_CONTROLLER_NRF52'])
+    elif conf.is_asterix() or conf.is_nrf54l15dk():
+        conf.env.bt_controller = 'nrf54'
+        conf.env.append_value('DEFINES', ['BT_CONTROLLER_NRF54'])
     elif bt_board in ('silk_bb2', 'silk', 'robert_bb2', 'robert_evt'):
         conf.env.bt_controller = 'da14681-01'
         conf.env.append_value('DEFINES', ['BT_CONTROLLER_DA14681'])
@@ -849,6 +855,8 @@ def size_resources(ctx):
     elif ctx.env.MICRO_FAMILY == 'STM32F7':
         max_size = 1024 * 1024
     elif ctx.env.MICRO_FAMILY == 'NRF52840':
+        max_size = 1024 * 1024
+    elif ctx.env.MICRO_FAMILY == 'NRF54L15':
         max_size = 1024 * 1024
     else:
         max_size = 256 * 1024
@@ -1604,6 +1612,9 @@ def _check_firmware_image_size(ctx, path):
             # 2048k of flash and 32k bootloader
             max_firmware_size = (2048 - 32) * BYTES_PER_K
     elif ctx.env.MICRO_FAMILY == 'NRF52840':
+        # 1024k of flash and 32k bootloader
+        max_firmware_size = (1024 - 32) * BYTES_PER_K
+    elif ctx.env.MICRO_FAMILY == 'NRF54L15':
         # 1024k of flash and 32k bootloader
         max_firmware_size = (1024 - 32) * BYTES_PER_K
     else:

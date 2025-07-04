@@ -111,6 +111,18 @@ elif board in ('nrf52840dk'):
             'drivers',
         ],
     )
+elif board in ('nrf54l15dk'):
+    bld.objects(
+        name='board',
+        source=[
+            'boards/board_nrf54l15dk.c',
+        ],
+        use=[
+            'fw_includes',
+            'freertos',
+            'drivers',
+        ],
+    )
 else:
     bld.fatal('src/fw/board/wscript_build: '
               'Unknown board {}'.format(board))

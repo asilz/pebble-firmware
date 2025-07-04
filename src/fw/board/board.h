@@ -23,13 +23,15 @@
 #include <mcu.h>
 
 #if defined(MICRO_FAMILY_STM32F2)
-# include "board_stm32.h"
+#include "board_stm32.h"
 #elif defined(MICRO_FAMILY_STM32F4)
-# include "board_stm32.h"
+#include "board_stm32.h"
 #elif defined(MICRO_FAMILY_STM32F7)
-# include "board_stm32.h"
+#include "board_stm32.h"
 #elif defined(MICRO_FAMILY_NRF52840)
-# include "board_nrf5.h"
+#include "board_nrf5.h"
+#elif defined(MICRO_FAMILY_NRF54L15)
+#include "board_nrf5.h"
 #elif !defined(SDK) && !defined(UNITTEST)
-# error "Unknown or missing MICRO_FAMILY_* define"
+#error "Unknown or missing MICRO_FAMILY_* define"
 #endif
