@@ -1,19 +1,19 @@
-#include "drivers/dbgserial.h"
 #include "system/bootbits.h"
-#include "system/retained.h"
 
 #include <git_version.auto.h>
-
 #include <inttypes.h>
+#include <nrfx.h>
 #include <stdint.h>
 
-#include <nrfx.h>
+#include "drivers/dbgserial.h"
+#include "system/retained.h"
 
 static const uint32_t s_bootloader_timestamp = GIT_TIMESTAMP;
 
 void boot_bit_init(void) {
   /* FIXME: compute region to be enabled based on __retained_start (or use nrfx helpers) */
-  NRF_POWER->RAM[0].POWERSET |= POWER_RAM_POWER_S2RETENTION_On << POWER_RAM_POWER_S2RETENTION_Pos;
+  // NRF_POWER->RAM[0].POWERSET |= POWER_RAM_POWER_S2RETENTION_On <<
+  // POWER_RAM_POWER_S2RETENTION_Pos;
 
   retained_init();
 
@@ -52,6 +52,4 @@ void boot_version_write(void) {
   retained_write(BOOTLOADER_VERSION_REGISTER, s_bootloader_timestamp);
 }
 
-uint32_t boot_version_read(void) {
-  return retained_read(BOOTLOADER_VERSION_REGISTER);
-}
+uint32_t boot_version_read(void) { return retained_read(BOOTLOADER_VERSION_REGISTER); }

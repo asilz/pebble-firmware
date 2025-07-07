@@ -1,14 +1,13 @@
 #include "drivers/dbgserial.h"
 
+#include <board.h>
+#include <nrfx.h>
+#include <stdbool.h>
+
 #include "util/cobs.h"
 #include "util/crc32.h"
 #include "util/misc.h"
 #include "util/net.h"
-
-#include <board.h>
-#include <nrfx.h>
-
-#include <stdbool.h>
 
 #define MAX_MESSAGE (1024)
 #define FRAME_DELIMITER '\x55'
@@ -27,38 +26,63 @@ typedef struct __attribute__((__packed__)) PushPacket {
 } PushPacket;
 
 static const unsigned char s_message_header[] = {
-  // Message type: text
-  1,
-  // Source filename
-  'B', 'O', 'O', 'T', 'L', 'O', 'A', 'D', 'E', 'R', 0, 0, 0, 0, 0, 0,
-  // Log level and task
-  '*', '*',
-  // Timestamp
-  0, 0, 0, 0, 0, 0, 0, 0,
-  // Line number
-  0, 0,
+    // Message type: text
+    1,
+    // Source filename
+    'B',
+    'O',
+    'O',
+    'T',
+    'L',
+    'O',
+    'A',
+    'D',
+    'E',
+    'R',
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    // Log level and task
+    '*',
+    '*',
+    // Timestamp
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    // Line number
+    0,
+    0,
 };
 
 static size_t s_message_length = 0;
 static unsigned char s_message_buffer[MAX_MESSAGE];
 
 void dbgserial_init(void) {
-  NRF_CLOCK->TASKS_HFCLKSTART = 1;
-  NRF_UART0->BAUDRATE = UART_BAUDRATE_BAUDRATE_Baud115200;
-  NRF_UART0->TASKS_STARTTX = 1;
-  NRF_UART0->PSELTXD = BOARD_UART_TX_PIN;
+  // NRF_CLOCK->TASKS_HFCLKSTART = 1;
+  NRF_UARTE00->BAUDRATE = UARTE_BAUDRATE_BAUDRATE_Baud115200;
+  // NRF_UARTE00->TASKS_STARTTX = 1;
+  NRF_UARTE00->PSEL.TXD = BOARD_UART_TX_PIN;
 }
 
 static void prv_putchar(uint8_t c) {
-  NRF_UART0->ENABLE = UART_ENABLE_ENABLE_Enabled;
-  NRF_UART0->TXD = c;
-  while (NRF_UART0->EVENTS_TXDRDY != 1) {}
-  NRF_UART0->EVENTS_TXDRDY = 0;
-  NRF_UART0->ENABLE = UART_ENABLE_ENABLE_Disabled;
+  NRF_UARTE00->ENABLE = UARTE_ENABLE_ENABLE_Enabled;
+  NRF_UARTE00->DMA.TX.PTR = (uint32_t)(&c);
+  NRF_UARTE00->DMA.TX.MAXCNT = 1;
+  while (NRF_UARTE00->EVENTS_TXDRDY != 1) {
+  }
+  NRF_UARTE00->EVENTS_TXDRDY = 0;
+  NRF_UARTE00->ENABLE = UARTE_ENABLE_ENABLE_Disabled;
 }
 
-void dbgserial_print(const char* str) {
-
+void dbgserial_print(const char *str) {
   for (; *str && s_message_length < MAX_MESSAGE; ++str) {
     if (*str == '\n') {
       dbgserial_newline();
@@ -66,13 +90,12 @@ void dbgserial_print(const char* str) {
       s_message_buffer[s_message_length++] = *str;
     }
   }
-
 }
 
 void dbgserial_newline(void) {
   uint32_t crc;
-  size_t raw_length = sizeof(PulseFrame) + sizeof(PushPacket) +
-                      sizeof(s_message_header) + s_message_length + sizeof(crc);
+  size_t raw_length = sizeof(PulseFrame) + sizeof(PushPacket) + sizeof(s_message_header) +
+                      s_message_length + sizeof(crc);
   unsigned char raw_packet[raw_length];
 
   PulseFrame *frame = (PulseFrame *)raw_packet;
@@ -80,13 +103,11 @@ void dbgserial_newline(void) {
 
   PushPacket *transport = (PushPacket *)frame->information;
   transport->protocol = hton16(PULSE_PROTOCOL_LOGGING);
-  transport->length = hton16(sizeof(PushPacket) + sizeof(s_message_header) +
-                             s_message_length);
+  transport->length = hton16(sizeof(PushPacket) + sizeof(s_message_header) + s_message_length);
 
   unsigned char *app = transport->information;
   memcpy(app, s_message_header, sizeof(s_message_header));
-  memcpy(&app[sizeof(s_message_header)], s_message_buffer,
-         s_message_length);
+  memcpy(&app[sizeof(s_message_header)], s_message_buffer, s_message_length);
 
   crc = crc32(CRC32_INIT, raw_packet, raw_length - sizeof(crc));
   memcpy(&raw_packet[raw_length - sizeof(crc)], &crc, sizeof(crc));
@@ -94,20 +115,20 @@ void dbgserial_newline(void) {
   unsigned char cooked_packet[MAX_SIZE_AFTER_COBS_ENCODING(raw_length)];
   size_t cooked_length = cobs_encode(cooked_packet, raw_packet, raw_length);
 
-  //prv_putchar(FRAME_DELIMITER);
+  // prv_putchar(FRAME_DELIMITER);
   for (size_t i = 0; i < s_message_length; ++i) {
     if (s_message_buffer[i] == FRAME_DELIMITER) {
-      //prv_putchar('\0');
+      // prv_putchar('\0');
     } else {
       prv_putchar(s_message_buffer[i]);
     }
   }
-  //prv_putchar(FRAME_DELIMITER);
+  // prv_putchar(FRAME_DELIMITER);
 
   s_message_length = 0;
 }
 
-void dbgserial_putstr(const char* str) {
+void dbgserial_putstr(const char *str) {
   dbgserial_print(str);
 
   dbgserial_newline();
