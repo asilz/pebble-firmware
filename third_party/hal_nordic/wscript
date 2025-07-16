@@ -1,6 +1,8 @@
 def configure(conf):
     if conf.env.MICRO_FAMILY == 'NRF52840':
         conf.env.append_unique('DEFINES', 'NRF52840_XXAA')
+    elif conf.env.MICRO_FAMILY == 'NRF54L15':
+        conf.env.append_unique('DEFINES', 'NRF54L15_XXAA')
     if conf.is_asterix():
         conf.env.append_unique('DEFINES', 'NRF_CONFIG_NFCT_PINS_AS_GPIOS')
         conf.env.append_unique('DEFINES', 'NRFX_GPIOTE_ENABLED=1')
@@ -36,11 +38,45 @@ def configure(conf):
         conf.env.append_unique('DEFINES', 'NRFX_TWIM1_ENABLED=1')
         conf.env.append_unique('DEFINES', 'NRFX_UARTE_ENABLED=1')
         conf.env.append_unique('DEFINES', 'NRFX_UARTE0_ENABLED=1')
-        conf.env.append_unique('DEFINES', 'NRFX_CLOCK_ENABLED=1')
+        conf.env.append_unique('DEFINES', 'NRFX_CLOCK_ENABLED=1')   
+    elif conf.is_nrf54l15dk():
+        conf.env.append_unique('DEFINES', 'NRF_CONFIG_NFCT_PINS_AS_GPIOS')
+        conf.env.append_unique('DEFINES', 'NRF_APPLICATION')
+        conf.env.append_unique('DEFINES', 'NRFX_TWIM_ENABLED=1')
+        conf.env.append_unique('DEFINES', 'NRFX_GPIOTE_ENABLED=1')
+        conf.env.append_unique('DEFINES', 'NRFX_GPIOTE20_ENABLED=1')
+        conf.env.append_unique('DEFINES', 'NRFX_TIMER_ENABLED=1')
+        conf.env.append_unique('DEFINES', 'NRFX_TIMER10_ENABLED=1')
+        conf.env.append_unique('DEFINES', 'NRFX_TIMER20_ENABLED=1')
+        conf.env.append_unique('DEFINES', 'NRFX_TIMER21_ENABLED=1')
+        conf.env.append_unique('DEFINES', 'NRFX_TIMER22_ENABLED=1')
+        conf.env.append_unique('DEFINES', 'NRFX_PWM_ENABLED=1')
+        conf.env.append_unique('DEFINES', 'NRFX_PWM20_ENABLED=1')
+        conf.env.append_unique('DEFINES', 'NRFX_SPIM_ENABLED=1')
+        conf.env.append_unique('DEFINES', 'NRFX_SPIM30_ENABLED=1')
+        conf.env.append_unique('DEFINES', 'NRFX_TWIM21_ENABLED=1')
+        conf.env.append_unique('DEFINES', 'NRFX_TWIM22_ENABLED=1')
+        conf.env.append_unique('DEFINES', 'NRFX_UARTE_ENABLED=1')
+        conf.env.append_unique('DEFINES', 'NRFX_UARTE00_ENABLED=1')
+        conf.env.append_unique('DEFINES', 'NRFX_DPPI_ENABLED=1')
+        conf.env.append_unique('DEFINES', 'NRFX_DPPI00_ENABLED=1')
+        conf.env.append_unique('DEFINES', 'NRFX_DPPI10_ENABLED=1')
+        conf.env.append_unique('DEFINES', 'NRFX_DPPI20_ENABLED=1')
+        conf.env.append_unique('DEFINES', 'NRFX_DPPI30_ENABLED=1')
+        conf.env.append_unique('DEFINES', 'NRFX_PPIB00_ENABLED=1')
+        conf.env.append_unique('DEFINES', 'NRFX_PPIB10_ENABLED=1')
+        conf.env.append_unique('DEFINES', 'NRFX_PPIB01_ENABLED=1')
+        conf.env.append_unique('DEFINES', 'NRFX_PPIB20_ENABLED=1')
+        conf.env.append_unique('DEFINES', 'NRFX_PPIB11_ENABLED=1')
+        conf.env.append_unique('DEFINES', 'NRFX_PPIB21_ENABLED=1')
+        conf.env.append_unique('DEFINES', 'NRFX_PPIB22_ENABLED=1')
+        conf.env.append_unique('DEFINES', 'NRFX_PPIB30_ENABLED=1')
+        conf.env.append_unique('DEFINES', 'NRFX_WDT_ENABLED=1')
+        conf.env.append_unique('DEFINES', 'NRFX_WDT30_ENABLED=1')
 
 
 def build(bld):
-    if bld.env.MICRO_FAMILY == 'NRF52840':
+    if bld.env.MICRO_FAMILY == 'NRF52840' or bld.env.MICRO_FAMILY == 'NRF54L15':
         micro_sources = bld.path.ant_glob('nrfx/**/*.c', excl = ['**/system_nrf*.c', '**/startup_nrf_common.c', '**/nrfx_twi_twim.c'])
 
         micro_includes = [
@@ -57,6 +93,8 @@ def build(bld):
             micro_includes += ['../../src/fw/board/boards/board_asterix']
         elif bld.is_nrf52840dk():
             micro_includes += ['../../src/fw/board/boards/board_nrf52840dk']
+        elif bld.is_nrf54l15dk():
+            micro_includes += ['../../src/fw/board/boards/board_nrf54l15dk']
         else:
             bld.fatal("no board for nRF5 includes")
 

@@ -7,115 +7,135 @@
 #define BT_VENDOR_NAME "Core Devices LLC"
 #define BOARD_LSE_MODE RCC_LSE_Bypass
 
-#define BOARD_RTC_INST NRF_RTC1
+#define BOARD_RTC_INST NRF_GRTC
 
 static const BoardConfig BOARD_CONFIG = {
-  .ambient_light_dark_threshold = 150,
-  .ambient_k_delta_threshold = 50,
-  .photo_en = { },
-  .als_always_on = true,
+    .ambient_light_dark_threshold = 150,
+    .ambient_k_delta_threshold = 50,
+    .photo_en = {},
+    .als_always_on = true,
 
-  // new sharp display requires 30/60Hz so we feed it directly from PMIC... XXX: some day
-  .lcd_com = { 0 },
+    // new sharp display requires 30/60Hz so we feed it directly from PMIC... XXX: some day
+    .lcd_com = {0},
 
-  .backlight_on_percent = 25,
-  .backlight_max_duty_cycle_percent = 67,
+    .backlight_on_percent = 25,
+    .backlight_max_duty_cycle_percent = 67,
 
-  .power_5v0_options = OptionNotPresent,
-  .power_ctl_5v0 = { 0 },
-  
-  .dbgserial_int = {
-    .peripheral = NRFX_GPIOTE_INSTANCE(0), 
-    .channel = 0,
-    .gpio_pin = NRF_GPIO_PIN_MAP(0, 5),
-  },
+    .power_5v0_options = OptionNotPresent,
+    .power_ctl_5v0 = {0},
 
-  .has_mic = true,
+    .dbgserial_int =
+        {
+            .peripheral = NRFX_GPIOTE_INSTANCE(20),
+            .channel = 0,
+            .gpio_pin = NRF_GPIO_PIN_MAP(0, 5),
+        },
+
+    .has_mic = true,
 };
 
 static const BoardConfigButton BOARD_CONFIG_BUTTON = {
-  .buttons = {
-    [BUTTON_ID_BACK] =
-        { "Back",   { NRFX_GPIOTE_INSTANCE(0), 1, NRF_GPIO_PIN_MAP(0, 28) }, NRF_GPIO_PIN_PULLUP },
-    [BUTTON_ID_UP] =
-        { "Up",     { NRFX_GPIOTE_INSTANCE(0), 2, NRF_GPIO_PIN_MAP(0, 29) }, NRF_GPIO_PIN_PULLUP },
-    [BUTTON_ID_SELECT] =
-        { "Select", { NRFX_GPIOTE_INSTANCE(0), 3, NRF_GPIO_PIN_MAP(0, 30) }, NRF_GPIO_PIN_PULLUP },
-    [BUTTON_ID_DOWN] =
-        { "Down",   { NRFX_GPIOTE_INSTANCE(0), 4, NRF_GPIO_PIN_MAP(0, 31) }, NRF_GPIO_PIN_PULLUP },
-  },
-  .button_com = { 0 },
-  .active_high = false,
-  .timer = NRFX_TIMER_INSTANCE(1),
+    .buttons =
+        {
+            [BUTTON_ID_BACK] = {"Back",
+                                {NRFX_GPIOTE_INSTANCE(20), 1, NRF_GPIO_PIN_MAP(0, 28)},
+                                NRF_GPIO_PIN_PULLUP},
+            [BUTTON_ID_UP] = {"Up",
+                              {NRFX_GPIOTE_INSTANCE(20), 2, NRF_GPIO_PIN_MAP(0, 29)},
+                              NRF_GPIO_PIN_PULLUP},
+            [BUTTON_ID_SELECT] = {"Select",
+                                  {NRFX_GPIOTE_INSTANCE(20), 3, NRF_GPIO_PIN_MAP(0, 30)},
+                                  NRF_GPIO_PIN_PULLUP},
+            [BUTTON_ID_DOWN] = {"Down",
+                                {NRFX_GPIOTE_INSTANCE(20), 4, NRF_GPIO_PIN_MAP(0, 31)},
+                                NRF_GPIO_PIN_PULLUP},
+        },
+    .button_com = {0},
+    .active_high = false,
+    .timer = NRFX_TIMER_INSTANCE(10),
 };
 
 static const BoardConfigPower BOARD_CONFIG_POWER = {
-  .pmic_int = { },
-  .pmic_int_gpio = { .gpio_pin = GPIO_Pin_NULL, }, /* TODO */
+    .pmic_int = {},
+    .pmic_int_gpio =
+        {
+            .gpio_pin = GPIO_Pin_NULL,
+        }, /* TODO */
 
-  .battery_vmon_scale = { /* TODO */
-    // Battery voltage is scaled down by a pair of resistors:
-    //  - R13 on the top @ 47k
-    //  - R15 on the bottom @ 30.1k
-    //   (R13 + R15) / R15 = 77.1 / 30.1
-    .numerator = 771,
-    .denominator = 301,
-  },
+    .battery_vmon_scale =
+        {
+            /* TODO */
+            // Battery voltage is scaled down by a pair of resistors:
+            //  - R13 on the top @ 47k
+            //  - R15 on the bottom @ 30.1k
+            //   (R13 + R15) / R15 = 77.1 / 30.1
+            .numerator = 771,
+            .denominator = 301,
+        },
 
-  .vusb_stat = { .gpio_pin = GPIO_Pin_NULL, },
-  .chg_stat = { },
-  .chg_fast = { },
-  .chg_en = { },
-  .has_vusb_interrupt = false,
+    .vusb_stat =
+        {
+            .gpio_pin = GPIO_Pin_NULL,
+        },
+    .chg_stat = {},
+    .chg_fast = {},
+    .chg_en = {},
+    .has_vusb_interrupt = false,
 
-  .wake_on_usb_power = false,
+    .wake_on_usb_power = false,
 
-  .charging_status_led_voltage_compensation = 0,
+    .charging_status_led_voltage_compensation = 0,
 
 #if defined(IS_BIGBOARD) && !defined(BATTERY_DEBUG)
-  // We don't use the same batteries on all bigboards, so set a safe cutoff voltage of 4.2V.
-  // Please do not change this!
-  .charging_cutoff_voltage = 4200,
+    // We don't use the same batteries on all bigboards, so set a safe cutoff voltage of 4.2V.
+    // Please do not change this!
+    .charging_cutoff_voltage = 4200,
 #else
-  .charging_cutoff_voltage = 4300,
+    .charging_cutoff_voltage = 4300,
 #endif
 
-  .low_power_threshold = 5,
+    .low_power_threshold = 5,
 
-  // Based on measurements from v4.0-beta16.
-  // Typical Connected Current at VBAT without HRM ~520uA
-  // Added draw with HRM on : ~1.5mA ==> Average impact (5% per hour + 1 hour continuous / day)
-  //    (.05 * 23/24 + 1.0 * 1/24) * 1.5mA = ~134uA
-  // Assume ~150uA or so for notifications & user interaction
-  // Total Hours = 125 mA * hr / (.520 + .134 + 150)mA = 155 hours
-  .battery_capacity_hours = 155 /* TODO */,
+    // Based on measurements from v4.0-beta16.
+    // Typical Connected Current at VBAT without HRM ~520uA
+    // Added draw with HRM on : ~1.5mA ==> Average impact (5% per hour + 1 hour continuous / day)
+    //    (.05 * 23/24 + 1.0 * 1/24) * 1.5mA = ~134uA
+    // Assume ~150uA or so for notifications & user interaction
+    // Total Hours = 125 mA * hr / (.520 + .134 + 150)mA = 155 hours
+    .battery_capacity_hours = 155 /* TODO */,
 };
 
 static const BoardConfigMag BOARD_CONFIG_MAG = {
-  .mag_config = {
+    .mag_config =
+        {
 #ifdef IS_BIGBOARD
-    .axes_offsets[AXIS_X] = 1,
-    .axes_offsets[AXIS_Y] = 0,
-    .axes_offsets[AXIS_Z] = 2,
-    .axes_inverts[AXIS_X] = false,
-    .axes_inverts[AXIS_Y] = true,
-    .axes_inverts[AXIS_Z] = true,
+            .axes_offsets[AXIS_X] = 1,
+            .axes_offsets[AXIS_Y] = 0,
+            .axes_offsets[AXIS_Z] = 2,
+            .axes_inverts[AXIS_X] = false,
+            .axes_inverts[AXIS_Y] = true,
+            .axes_inverts[AXIS_Z] = true,
 #else
-    .axes_offsets[AXIS_X] = 1,
-    .axes_offsets[AXIS_Y] = 0,
-    .axes_offsets[AXIS_Z] = 2,
-    .axes_inverts[AXIS_X] = true,
-    .axes_inverts[AXIS_Y] = true,
-    .axes_inverts[AXIS_Z] = false,
+            .axes_offsets[AXIS_X] = 1,
+            .axes_offsets[AXIS_Y] = 0,
+            .axes_offsets[AXIS_Z] = 2,
+            .axes_inverts[AXIS_X] = true,
+            .axes_inverts[AXIS_Y] = true,
+            .axes_inverts[AXIS_Z] = false,
 #endif
-  },
-  .mag_int_gpio = { NRF5_GPIO_RESOURCE_EXISTS, NRF_GPIO_PIN_MAP(0, 3) },
-  .mag_int = { .peripheral = NRFX_GPIOTE_INSTANCE(0), .channel = 5, .gpio_pin = NRF_GPIO_PIN_MAP(0, 3), },
+        },
+    .mag_int_gpio = {NRF5_GPIO_RESOURCE_EXISTS, NRF_GPIO_PIN_MAP(0, 3)},
+    .mag_int =
+        {
+            .peripheral = NRFX_GPIOTE_INSTANCE(20),
+            .channel = 5,
+            .gpio_pin = NRF_GPIO_PIN_MAP(0, 3),
+        },
 };
 
 static const BoardConfigActuator BOARD_CONFIG_VIBE = {
-  .ctl = { NRF5_GPIO_RESOURCE_EXISTS, NRF_GPIO_PIN_MAP(0, 2), true }, // LRA_EN
-  .vsys_scale = 3300,
+    .ctl = {NRF5_GPIO_RESOURCE_EXISTS, NRF_GPIO_PIN_MAP(0, 2), true},  // LRA_EN
+    .vsys_scale = 3300,
 };
 
 #if 0
@@ -151,8 +171,6 @@ static const BoardConfigAccel BOARD_CONFIG_ACCEL = {
   },
 };
 
-
-
 #define ACCESSORY_UART_IS_SHARED_WITH_BT 1
 static const BoardConfigAccessory BOARD_CONFIG_ACCESSORY = {
   .exti = { EXTI_PortSourceGPIOA, 11 },
@@ -185,7 +203,6 @@ static const BoardConfigMCO1 BOARD_CONFIG_MCO1 = {
   },
 };
 
-
 #define DIALOG_TIMER_IRQ_HANDLER TIM6_IRQHandler
 static const TimerIrqConfig BOARD_BT_WATCHDOG_TIMER = {
   .timer = {
@@ -200,7 +217,7 @@ extern DMARequest * const SHARP_SPI_TX_DMA;
 
 extern UARTDevice * const QEMU_UART;
 #endif
-extern UARTDevice * const DBG_UART;
+extern UARTDevice *const DBG_UART;
 #if 0
 extern UARTDevice * const ACCESSORY_UART;
 
@@ -212,35 +229,33 @@ extern I2CSlavePort * const I2C_AS3701B;
 
 extern PwmState BACKLIGHT_PWM_STATE;
 static const BoardConfigActuator BOARD_CONFIG_BACKLIGHT = {
-  .options = ActuatorOptions_Pwm,
-  //.ctl = { NRF5_GPIO_RESOURCE_EXISTS, NRF_GPIO_PIN_MAP(1, 8), true },
-  .pwm = {
-    .state = &BACKLIGHT_PWM_STATE,
-    .output = { NRF5_GPIO_RESOURCE_EXISTS, NRF_GPIO_PIN_MAP(1, 4), true },
-    .peripheral = NRFX_PWM_INSTANCE(0)
-  },
+    .options = ActuatorOptions_Pwm,
+    //.ctl = { NRF5_GPIO_RESOURCE_EXISTS, NRF_GPIO_PIN_MAP(1, 8), true },
+    .pwm = {.state = &BACKLIGHT_PWM_STATE,
+            .output = {NRF5_GPIO_RESOURCE_EXISTS, NRF_GPIO_PIN_MAP(1, 4), true},
+            .peripheral = NRFX_PWM_INSTANCE(20)},
 };
 
 static const BoardConfigSharpDisplay BOARD_CONFIG_DISPLAY = {
-  .spi = NRFX_SPIM_INSTANCE(3),
+    .spi = NRFX_SPIM_INSTANCE(30),
 
-  .clk = { NRF5_GPIO_RESOURCE_EXISTS, NRF_GPIO_PIN_MAP(0, 7), true },
-  .mosi = { NRF5_GPIO_RESOURCE_EXISTS, NRF_GPIO_PIN_MAP(0, 9), true },
-  .cs = { NRF5_GPIO_RESOURCE_EXISTS, NRF_GPIO_PIN_MAP(1, 3), true },
+    .clk = {NRF5_GPIO_RESOURCE_EXISTS, NRF_GPIO_PIN_MAP(0, 7), true},
+    .mosi = {NRF5_GPIO_RESOURCE_EXISTS, NRF_GPIO_PIN_MAP(0, 9), true},
+    .cs = {NRF5_GPIO_RESOURCE_EXISTS, NRF_GPIO_PIN_MAP(1, 3), true},
 
-  .on_ctrl = { NRF5_GPIO_RESOURCE_EXISTS, NRF_GPIO_PIN_MAP(0, 4), true },
+    .on_ctrl = {NRF5_GPIO_RESOURCE_EXISTS, NRF_GPIO_PIN_MAP(0, 4), true},
 };
 
-extern const VoltageMonitorDevice * VOLTAGE_MONITOR_ALS;
-extern const VoltageMonitorDevice * VOLTAGE_MONITOR_BATTERY;
+extern const VoltageMonitorDevice *VOLTAGE_MONITOR_ALS;
+extern const VoltageMonitorDevice *VOLTAGE_MONITOR_BATTERY;
 
-extern const TemperatureSensor * const TEMPERATURE_SENSOR;
+extern const TemperatureSensor *const TEMPERATURE_SENSOR;
 
-extern HRMDevice * const HRM;
+extern HRMDevice *const HRM;
 
-extern QSPIPort * const QSPI;
-extern QSPIFlash * const QSPI_FLASH;
+extern QSPIPort *const QSPI;
+extern QSPIFlash *const QSPI_FLASH;
 
-extern MicDevice * const MIC;
+extern MicDevice *const MIC;
 
-extern I2CSlavePort * const I2C_NPM1300;
+extern I2CSlavePort *const I2C_NPM1300;

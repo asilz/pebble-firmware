@@ -22,10 +22,12 @@
 #include <hal/nrf_clock.h>
 #include <hal/nrf_gpio.h>
 #include <nrfx_gpiote.h>
-#include <nrfx_qspi.h>
+// #include <nrfx_qspi.h>
 #include <nrfx_spim.h>
 #include <nrfx_twim.h>
+#include <soc/nrfx_irqs.h>
 
+/*
 static QSPIPortState s_qspi_port_state;
 static QSPIPort QSPI_PORT = {
     .state = &s_qspi_port_state,
@@ -53,6 +55,7 @@ static QSPIFlash QSPI_FLASH_DEVICE = {
 };
 QSPIFlash *const QSPI_FLASH = &QSPI_FLASH_DEVICE;
 IRQ_MAP_NRFX(QSPI, nrfx_qspi_irq_handler);
+*/
 /* PERIPHERAL ID 43 */
 
 static UARTDeviceState s_dbg_uart_state;
@@ -62,36 +65,36 @@ static UARTDevice DBG_UART_DEVICE = {
     .rx_gpio = NRF_GPIO_PIN_MAP(0, 8),
     .rts_gpio = NRF_UARTE_PSEL_DISCONNECTED,
     .cts_gpio = NRF_UARTE_PSEL_DISCONNECTED,
-    .periph = NRFX_UARTE_INSTANCE(0),
-    .counter = NRFX_TIMER_INSTANCE(2),
+    .periph = NRFX_UARTE_INSTANCE(00),
+    .counter = NRFX_TIMER_INSTANCE(20),
 };
 UARTDevice *const DBG_UART = &DBG_UART_DEVICE;
-IRQ_MAP_NRFX(UART0_UARTE0, nrfx_uarte_0_irq_handler);
+// IRQ_MAP_NRFX(SERIAL00, nrfx_uarte_00_irq_handler);
 /* PERIPHERAL ID 8 */
 
-IRQ_MAP_NRFX(TIMER0, MPSL_IRQ_TIMER0_Handler);
-IRQ_MAP_NRFX(RTC0, MPSL_IRQ_RTC0_Handler);
+IRQ_MAP_NRFX(TIMER20, MPSL_IRQ_TIMER0_Handler);
+// IRQ_MAP_NRFX(RTC0, MPSL_IRQ_RTC0_Handler);
 IRQ_MAP_NRFX(CLOCK_POWER, MPSL_IRQ_CLOCK_Handler);
-IRQ_MAP_NRFX(RADIO, MPSL_IRQ_RADIO_Handler);
-IRQ_MAP_NRFX(EGU5_SWI5, mpsl_low_priority_process);
+IRQ_MAP_NRFX(RADIO_0, MPSL_IRQ_RADIO_Handler);
+IRQ_MAP_NRFX(SWI03, mpsl_low_priority_process);
 
 /* buttons */
-IRQ_MAP_NRFX(TIMER1, nrfx_timer_1_irq_handler);
-IRQ_MAP_NRFX(TIMER2, nrfx_timer_2_irq_handler);
+// IRQ_MAP_NRFX(TIMER21, nrfx_timer_21_irq_handler);
+// IRQ_MAP_NRFX(TIMER22, nrfx_timer_22_irq_handler);
 
 /* display */
-IRQ_MAP_NRFX(SPIM3, nrfx_spim_3_irq_handler);
+// IRQ_MAP_NRFX(SPU30, nrfx_spim_30_irq_handler);
 
 /* PERIPHERAL ID 10 */
 
 /* EXTI */
-IRQ_MAP_NRFX(GPIOTE, nrfx_gpiote_0_irq_handler);
+// IRQ_MAP_NRFX(GPIOTE20_1, nrfx_gpiote_20_irq_handler);
 
 /* nPM1300 */
 static I2CBusState I2C_NPMC_IIC1_BUS_STATE = {};
 
 static const I2CBusHal I2C_NPMC_IIC1_BUS_HAL = {
-    .twim = NRFX_TWIM_INSTANCE(1),
+    .twim = NRFX_TWIM_INSTANCE(21),
     .frequency = NRF_TWIM_FREQ_400K,
 };
 
@@ -110,7 +113,7 @@ static const I2CBus I2C_NPMC_IIC1_BUS = {
         },
     .name = "I2C_NPMC_IIC1",
 };
-IRQ_MAP_NRFX(SPI1_SPIM1_SPIS1_TWI1_TWIM1_TWIS1, nrfx_twim_1_irq_handler);
+// IRQ_MAP_NRFX(SPI1_SPIM1_SPIS1_TWI1_TWIM1_TWIS1, nrfx_twim_21_irq_handler);
 /* PERIPHERAL ID 9 */
 
 static const I2CSlavePort I2C_SLAVE_NPM1300 = {
@@ -124,7 +127,7 @@ I2CSlavePort *const I2C_NPM1300 = &I2C_SLAVE_NPM1300;
 static I2CBusState I2C_IIC2_BUS_STATE = {};
 
 static const I2CBusHal I2C_IIC2_BUS_HAL = {
-    .twim = NRFX_TWIM_INSTANCE(0),
+    .twim = NRFX_TWIM_INSTANCE(22),
     .frequency = NRF_TWIM_FREQ_400K,
 };
 
@@ -144,7 +147,7 @@ static const I2CBus I2C_IIC2_BUS = {
         },
     .name = "I2C_IIC2",
 };
-IRQ_MAP_NRFX(SPI0_SPIM0_SPIS0_TWI0_TWIM0_TWIS0, nrfx_twim_0_irq_handler);
+// IRQ_MAP_NRFX(SPI0_SPIM0_SPIS0_TWI0_TWIM0_TWIS0, nrfx_twim_0_irq_handler);
 
 /* PERIPHERAL ID 11 */
 
@@ -153,7 +156,7 @@ IRQ_MAP_NRFX(SPI0_SPIM0_SPIS0_TWI0_TWIM0_TWIS0, nrfx_twim_0_irq_handler);
 /* asterix shares SPI with flash, which we don't support */
 
 PwmState BACKLIGHT_PWM_STATE;
-IRQ_MAP_NRFX(PWM0, nrfx_pwm_0_irq_handler);
+// IRQ_MAP_NRFX(PWM20, nrfx_pwm_20_irq_handler);
 
 void board_early_init(void) {
   PBL_LOG(LOG_LEVEL_ERROR, "asterix early init");

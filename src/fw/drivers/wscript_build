@@ -867,18 +867,20 @@ elif bld.is_nrf52840dk():
         ],
     )
 elif bld.is_nrf54l15dk():
-    # FIXME: driver should use platform agnostic SPI interface
     bld.objects(
-        name='driver_display',
+        name='driver_flash',
         source=[
-            'stubs/display.c',
+            'flash/flash_api.c',
+            'flash/flash_crc.c',
+            'flash/flash_erase.c',
+            'flash/cd_flash_driver.c',
+            'flash/flash_nrf52840dk.c',
         ],
         use=[
-            'driver_gpio',
+            'driver_qspi',
             'freertos',
             'fw_includes',
             'root_includes',
-            'hal_nordic',
         ],
     )
 
@@ -925,7 +927,7 @@ elif mcu_family == 'NRF54L15':
     bld.objects(
         name='driver_gpio',
         source=[
-            'stubs/gpio.c',
+            'nrf5/gpio.c',
         ],
         use=[
             'fw_includes',
@@ -1575,7 +1577,7 @@ elif mcu_family == 'NRF54L15':
     bld.objects(
         name='driver_qspi',
         source=[
-            'nrf5/qspi.c',
+            'stubs/qspi.c',
         ],
         use=[
             'freertos',
@@ -1684,11 +1686,23 @@ elif mcu_family in ('STM32F4', 'STM32F7'):
             'stm32_stdlib',
         ],
     )
-elif mcu_family == 'NRF52840' or mcu_family == 'NRF54L15':
+elif mcu_family == 'NRF52840':
     bld.objects(
         name='driver_rtc',
         source=[
             'nrf5/rtc.c',
+        ],
+        use=[
+            'freertos',
+            'fw_includes',
+            'root_includes',
+        ],
+    )
+elif mcu_family == 'NRF54L15':
+    bld.objects(
+        name='driver_rtc',
+        source=[
+            'nrf5/grtc.c',
         ],
         use=[
             'freertos',

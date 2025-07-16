@@ -1,8 +1,7 @@
-#include "drivers/rtc.h"
-
 #include "console/dbgserial.h"
 #include "drivers/exti.h"
 #include "drivers/periph_config.h"
+#include "drivers/rtc.h"
 #include "drivers/rtc_private.h"
 #include "drivers/stm32f2/rtc_calibration.h"
 #include "drivers/watchdog.h"
@@ -16,14 +15,9 @@
 #include "util/time/time.h"
 
 #define NRF5_COMPATIBLE
-#include <mcu.h>
-#if defined(MICRO_FAMILY_NRF52840)
-#include <hal/nrf_rtc.h>
-#elif defined(MICRO_FAMILY_NRF54L15)
 #include <hal/nrf_grtc.h>
-#endif
-
 #include <inttypes.h>
+#include <mcu.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -35,7 +29,7 @@ typedef uint32_t RtcIntervalTicks;
 static RtcIntervalTicks prv_get_last_save_time_ticks(void);
 static void prv_save_rtc_time_state(RtcIntervalTicks current_rtc_ticks);
 
-#define TICKS_IN_AN_INTERVAL (RTC_COUNTER_COUNTER_Msk + 1)
+#define TICKS_IN_AN_INTERVAL (GRTC_SYSCOUNTER_SYSCOUNTERL_VALUE_Msk + 1)
 
 static RtcIntervalTicks prv_elapsed_ticks(RtcIntervalTicks before, RtcIntervalTicks after) {
   int32_t result = after - before;
@@ -46,7 +40,7 @@ static RtcIntervalTicks prv_elapsed_ticks(RtcIntervalTicks before, RtcIntervalTi
 }
 
 static RtcIntervalTicks prv_get_rtc_interval_ticks(void) {
-  return nrf_rtc_counter_get(BOARD_RTC_INST);
+  return nrf_grtc_sys_counter_get(BOARD_RTC_INST);
 }
 
 /***
@@ -312,22 +306,8 @@ void rtc_init(void) {
     PBL_LOG(LOG_LEVEL_INFO, "RTC appears to have been reset :( hope you have your phone connected");
   }
 
-  nrf_rtc_prescaler_set(BOARD_RTC_INST, NRF_RTC_FREQ_TO_PRESCALER(RTC_TICKS_HZ));
-  nrf_rtc_task_trigger(BOARD_RTC_INST, NRF_RTC_TASK_START);
-
-#if TEST_RTC_FREQ
-  // FIXME: can be removed after FIRM-121 is fixed
-  extern void board_early_init();
-  board_early_init();
-  for (int i = 0; i < 100; i++) {
-    uint32_t ctr0 = nrf_rtc_counter_get(BOARD_RTC_INST);
-    while (nrf_rtc_counter_get(BOARD_RTC_INST) == ctr0);
-    ctr0 = nrf_rtc_counter_get(BOARD_RTC_INST) + 100;
-    uint32_t iters = 0;
-    while (nrf_rtc_counter_get(BOARD_RTC_INST) != ctr0) iters++;
-    PBL_LOG(LOG_LEVEL_INFO, "RTC: 100 RTC ticks took %" PRIu32 " iters", iters);
-  }
-#endif
+  // nrf_grtc_prescaler_set(BOARD_RTC_INST, NRF_RTC_FREQ_TO_PRESCALER(RTC_TICKS_HZ));
+  nrf_grtc_task_trigger(BOARD_RTC_INST, NRF_GRTC_TASK_START);
 
   prv_restore_rtc_time_state();
   s_did_init_rtc = true;

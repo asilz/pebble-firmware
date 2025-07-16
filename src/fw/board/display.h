@@ -77,6 +77,8 @@ typedef struct {
 #include "displays/display_silk.h"
 #elif BOARD_NRF52840DK
 #include "displays/display_silk.h"
+#elif BOARD_NRF54L15DK
+#include "displays/display_silk.h"
 #elif BOARD_CUTTS_BB
 #include "displays/display_snowy.h"
 #elif BOARD_ROBERT_BB
@@ -87,14 +89,14 @@ typedef struct {
 #include "displays/display_robert_evt.h"
 #else
 #error "Unknown display definition for board"
-#endif // BOARD_*
+#endif  // BOARD_*
 
-#endif // UNITTEST
+#endif  // UNITTEST
 
 // For backwards compatibility, new code should use PBL_DISPLAY_WIDTH and PBL_DISPLAY_HEIGHT
 #if !defined(DISP_COLS) || !defined(DISP_ROWS)
 #define DISP_COLS PBL_DISPLAY_WIDTH
 #define DISP_ROWS PBL_DISPLAY_HEIGHT
-#endif // DISP_COLS || DISP_ROWS
+#endif  // DISP_COLS || DISP_ROWS
 
-#endif // !SDK
+#endif  // !SDK

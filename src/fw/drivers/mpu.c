@@ -16,15 +16,14 @@
 
 #include "mpu.h"
 
-#include "mcu/cache.h"
-#include "system/passert.h"
-#include "util/size.h"
-
 #include <inttypes.h>
 
 #include "FreeRTOS.h"
-#include "task.h"
+#include "mcu/cache.h"
 #include "portmacro.h"
+#include "system/passert.h"
+#include "task.h"
+#include "util/size.h"
 
 #define CMSIS_COMPATIBLE
 #include <mcu.h>
@@ -32,7 +31,7 @@
 extern const uint32_t __SRAM_size__[];
 #if !defined(SRAM_BASE)
 // On the STM32F2, SRAM_BASE is not defined, but is equal to SRAM1_BASE
-#if defined(MICRO_FAMILY_NRF52840)
+#if defined(MICRO_FAMILY_NRF52840) || defined(MICRO_FAMILY_NRF54L15)
 #include <drivers/nrfx_common.h>
 #define SRAM_BASE (0x20000000UL)
 #else
@@ -42,33 +41,29 @@ extern const uint32_t __SRAM_size__[];
 #define SRAM_END (SRAM_BASE + (uint32_t)__SRAM_size__)
 
 typedef struct PermissionMapping {
-  bool priv_read:1;
-  bool priv_write:1;
-  bool user_read:1;
-  bool user_write:1;
-  uint8_t value:3;
+  bool priv_read : 1;
+  bool priv_write : 1;
+  bool user_read : 1;
+  bool user_write : 1;
+  uint8_t value : 3;
 } PermissionMapping;
 
 static const PermissionMapping s_permission_mappings[] = {
-  { false, false, false, false, 0x0 },
-  { true,  true,  false, false, 0x1 },
-  { true,  true,  true,  false, 0x2 },
-  { true,  true,  true,  true,  0x3 },
-  { true,  false, false, false, 0x5 },
-  { true,  false, true,  false, 0x6 },
-  { true,  false, true,  false, 0x7 } // Both 0x6 and 0x7 map to the same permissions.
+    {false, false, false, false, 0x0}, {true, true, false, false, 0x1},
+    {true, true, true, false, 0x2},    {true, true, true, true, 0x3},
+    {true, false, false, false, 0x5},  {true, false, true, false, 0x6},
+    {true, false, true, false, 0x7}  // Both 0x6 and 0x7 map to the same permissions. See table 4-47
+                                     // in generic user guide
 };
 
 static const uint32_t s_cache_settings[MpuCachePolicyNum] = {
-  [MpuCachePolicy_NotCacheable] = (0x1 << MPU_RASR_TEX_Pos) | (MPU_RASR_S_Msk),
-  [MpuCachePolicy_WriteThrough] = (MPU_RASR_S_Msk | MPU_RASR_C_Msk),
-  [MpuCachePolicy_WriteBackWriteAllocate] =
-      (0x1 << MPU_RASR_TEX_Pos) | (MPU_RASR_S_Msk | MPU_RASR_C_Msk | MPU_RASR_B_Msk),
-  [MpuCachePolicy_WriteBackNoWriteAllocate] =
-      (MPU_RASR_S_Msk | MPU_RASR_C_Msk | MPU_RASR_B_Msk),
+    [MpuCachePolicy_NotCacheable] = 0,
+    [MpuCachePolicy_WriteThrough] = 0,
+    [MpuCachePolicy_WriteBackWriteAllocate] = 0,
+    [MpuCachePolicy_WriteBackNoWriteAllocate] = 0,
 };
 
-static uint8_t get_permission_value(const MpuRegion* region) {
+static uint8_t get_permission_value(const MpuRegion *region) {
   for (unsigned int i = 0; i < ARRAY_LENGTH(s_permission_mappings); ++i) {
     if (s_permission_mappings[i].priv_read == region->priv_read &&
         s_permission_mappings[i].priv_write == region->priv_write &&
@@ -81,11 +76,11 @@ static uint8_t get_permission_value(const MpuRegion* region) {
   return 0;
 }
 
-static uint8_t get_size_field(const MpuRegion* region) {
+static uint8_t get_size_field(const MpuRegion *region) {
   unsigned int size = 32;
   int result = 4;
   while (size != region->size) {
-    PBL_ASSERT(size < region->size || size == 0x400000, "Invalid region size: %"PRIu32,
+    PBL_ASSERT(size < region->size || size == 0x400000, "Invalid region size: %" PRIu32,
                region->size);
 
     size *= 2;
@@ -95,18 +90,14 @@ static uint8_t get_size_field(const MpuRegion* region) {
   return result;
 }
 
-void mpu_enable(void) {
-  MPU->CTRL |= (MPU_CTRL_ENABLE_Msk | MPU_CTRL_PRIVDEFENA_Msk);
-}
+void mpu_enable(void) { return; }
 
-void mpu_disable(void) {
-  MPU->CTRL &= ~MPU_CTRL_ENABLE_Msk;
-}
+void mpu_disable(void) { return; }
 
 // Get the required region base address and region attribute register settings for the given region.
 // These are the values which should written to the RBAR and RASR registers to configure that
 // region.
-void mpu_get_register_settings(const MpuRegion* region, uint32_t *base_address_reg,
+void mpu_get_register_settings(const MpuRegion *region, uint32_t *base_address_reg,
                                uint32_t *attributes_reg) {
   PBL_ASSERTN(region);
   PBL_ASSERTN((region->base_address & 0x1f) == 0);
@@ -118,9 +109,7 @@ void mpu_get_register_settings(const MpuRegion* region, uint32_t *base_address_r
   // | Addr (27 bits) | Region Valid Bit | Region Num (4 bits) |
   // The address is unshifted, we take the top bits of the address and assume everything below
   // is zero, since the address must be power of 2 size aligned.
-  *base_address_reg = region->base_address |
-              0x1 << 4 |
-              region->region_num;
+  *base_address_reg = region->base_address | 0x1 << 4 | region->region_num;
 
   // MPU Region Attribute and Size Register
   // A lot of stuff here! Split into bytes...
@@ -128,26 +117,23 @@ void mpu_get_register_settings(const MpuRegion* region, uint32_t *base_address_r
   // | Reserved (2 bits) | TEX (3 bits) | S | C | B |
   // | Subregion Disable Byte |
   // | Reserved (2 bits) | Size Field (5 bits) | Enable Bit |
-  *attributes_reg = (get_permission_value(region) << 24) |
-              s_cache_settings[region->cache_policy] |
-              region->disabled_subregions << 8 |      // Disabled subregions
-              (get_size_field(region) << 1) |
-              region->enabled; // Enabled
+  *attributes_reg = (get_permission_value(region) << 24) | s_cache_settings[region->cache_policy] |
+                    region->disabled_subregions << 8 |                // Disabled subregions
+                    (get_size_field(region) << 1) | region->enabled;  // Enabled
 }
 
-
-void mpu_set_region(const MpuRegion* region) {
+void mpu_set_region(const MpuRegion *region) {
   uint32_t base_reg, attr_reg;
 
   mpu_get_register_settings(region, &base_reg, &attr_reg);
-  MPU->RBAR = base_reg;
-  MPU->RASR = attr_reg;
+  // MPU->RBAR = base_reg;
+  // MPU->RASR = attr_reg;
 }
 
-
 MpuRegion mpu_get_region(int region_num) {
-  MpuRegion region = { .region_num = region_num };
+  MpuRegion region = {.region_num = region_num};
 
+  /*
   MPU->RNR = region_num;
 
   const uint32_t attributes = MPU->RASR;
@@ -175,10 +161,10 @@ MpuRegion mpu_get_region(int region_num) {
       }
     }
   }
+    */
 
   return region;
 }
-
 
 // Fill in the task parameters for a new task with the configurable memory regions we want.
 void mpu_set_task_configurable_regions(MemoryRegion_t *memory_regions,
@@ -187,15 +173,15 @@ void mpu_set_task_configurable_regions(MemoryRegion_t *memory_regions,
   uint32_t base_reg, attr_reg;
 
   // Setup the configurable MPU regions
-  for (region_num=portFIRST_CONFIGURABLE_REGION, region_idx=0; region_num <= portLAST_CONFIGURABLE_REGION;
-            region_num++, region_idx++) {
+  for (region_num = portFIRST_CONFIGURABLE_REGION, region_idx = 0;
+       region_num <= portLAST_CONFIGURABLE_REGION; region_num++, region_idx++) {
     const MpuRegion *mpu_region = region_ptrs[region_idx];
     MpuRegion unused_region = {};
 
     // If not region defined, use unused
     if (mpu_region == NULL) {
       mpu_region = &unused_region;
-      attr_reg = 0; // Has a 0 in the enable bit, so this region won't be enabled.
+      attr_reg = 0;  // Has a 0 in the enable bit, so this region won't be enabled.
     } else {
       // Make sure that the region numbers passed in jive with the configurable region numbers.
       PBL_ASSERTN(mpu_region->region_num == region_num);
@@ -205,13 +191,12 @@ void mpu_set_task_configurable_regions(MemoryRegion_t *memory_regions,
       mpu_get_register_settings(mpu_region, &base_reg, &attr_reg);
     }
 
-    memory_regions[region_idx] = (MemoryRegion_t) {
-      .pvBaseAddress = (void *)mpu_region->base_address,
-      .ulLengthInBytes = mpu_region->size,
-      .ulParameters = attr_reg,
+    memory_regions[region_idx] = (MemoryRegion_t){
+        .pvBaseAddress = (void *)mpu_region->base_address,
+        .ulLengthInBytes = mpu_region->size,
+        .ulParameters = attr_reg,
     };
   }
-
 }
 
 bool mpu_memory_is_cachable(const void *addr) {

@@ -117,6 +117,10 @@ def get_qemu_cpu(ctx):
         return 'cortex-m4'
     elif is_asterix(ctx):
         return 'cortex-m4'
+    elif is_nrf52840dk(ctx):
+        return 'cortex-m4'
+    elif is_nrf54l15dk(ctx):
+        return 'cortex-m33'
     else:
         return 'unknown'
 

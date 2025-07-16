@@ -1,23 +1,21 @@
 #pragma once
 
-#include "display.h"
-
-#include "drivers/button_id.h"
 #include "debug/power_tracking.h"
+#include "display.h"
+#include "drivers/button_id.h"
 
-#define NRF52840_COMPATIBLE
+#define NRF54L15_COMPATIBLE
 #include <mcu.h>
-
-#include <stdint.h>
 #include <stdbool.h>
+#include <stdint.h>
 
 #pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunused-variable" 
+#pragma GCC diagnostic ignored "-Wunused-variable"
 #include <hal/nrf_gpio.h>
-#include <nrfx_spim.h>
 #include <nrfx_gpiote.h>
-#include <nrfx_timer.h>
 #include <nrfx_pwm.h>
+#include <nrfx_spim.h>
+#include <nrfx_timer.h>
 #pragma GCC diagnostic pop
 
 #define GPIO_Port_NULL (NULL)
@@ -29,24 +27,23 @@
 enum {
 #define IRQ_DEF(num, irq) IS_VALID_IRQ__##irq,
 #if defined(MICRO_FAMILY_NRF52840)
-#  include "irq_nrf52840.def"
+#include "irq_nrf52840.def"
+#error a
+#elif defined(MICRO_FAMILY_NRF54L15)
+#include "irq_nrf54l15.def"
 #else
-#  error need IRQ table for new micro family
+#error need IRQ table for new micro family
 #endif
 #undef IRQ_DEF
 };
 
 //! Creates a trampoline to the interrupt handler defined within the driver
-#define IRQ_MAP(irq, handler, device) \
-  void irq##_IRQHandler(void) { \
-    handler(device); \
-  } \
+#define IRQ_MAP(irq, handler, device)              \
+  void irq##_IRQHandler(void) { handler(device); } \
   _Static_assert(IS_VALID_IRQ__##irq || true, "(See comment below)")
 
-#define IRQ_MAP_NRFX(irq, handler) \
-  void irq##_IRQHandler(void) { \
-    handler(); \
-  } \
+#define IRQ_MAP_NRFX(irq, handler)           \
+  void irq##_IRQHandler(void) { handler(); } \
   _Static_assert(IS_VALID_IRQ__##irq || true, "(See comment below)")
 
 /*
@@ -57,44 +54,44 @@ enum {
 
 // There are a lot of DMA streams and they are very straight-forward to define. Let's use some
 // macro magic to make it a bit less tedious and error-prone.
-#define CREATE_DMA_STREAM(cnum, snum) \
+#define CREATE_DMA_STREAM(cnum, snum)                       \
   static DMAStreamState s_dma##cnum##_stream##snum##_state; \
-  static DMAStream DMA##cnum##_STREAM##snum##_DEVICE = { \
-    .state = &s_dma##cnum##_stream##snum##_state, \
-    .controller = &DMA##cnum##_DEVICE, \
-    .periph = DMA##cnum##_Stream##snum, \
-    .irq_channel = DMA##cnum##_Stream##snum##_IRQn, \
-  }; \
+  static DMAStream DMA##cnum##_STREAM##snum##_DEVICE = {    \
+      .state = &s_dma##cnum##_stream##snum##_state,         \
+      .controller = &DMA##cnum##_DEVICE,                    \
+      .periph = DMA##cnum##_Stream##snum,                   \
+      .irq_channel = DMA##cnum##_Stream##snum##_IRQn,       \
+  };                                                        \
   IRQ_MAP(DMA##cnum##_Stream##snum, dma_stream_irq_handler, &DMA##cnum##_STREAM##snum##_DEVICE)
 
 typedef struct {
   nrfx_gpiote_t peripheral;
   uint8_t channel;
-  uint32_t gpio_pin; ///< The result of NRF_GPIO_PIN_MAP(port, pin).
+  uint32_t gpio_pin;  ///< The result of NRF_GPIO_PIN_MAP(port, pin).
 } GpioteConfig;
 
 typedef GpioteConfig ExtiConfig; /* compatibility */
 
 typedef enum {
-  AccelThresholdLow, ///< A sensitive state used for stationary mode
-  AccelThresholdHigh, ///< The accelerometer's default sensitivity
+  AccelThresholdLow,   ///< A sensitive state used for stationary mode
+  AccelThresholdHigh,  ///< The accelerometer's default sensitivity
   AccelThreshold_Num,
 } AccelThreshold;
 
 typedef struct {
-  const char* const name; ///< Name for debugging purposes.
+  const char *const name;  ///< Name for debugging purposes.
   GpioteConfig gpiote;
   nrf_gpio_pin_pull_t pull;
 } ButtonConfig;
 
 typedef struct {
-  const uint32_t gpio_pin; ///< The result of NRF_GPIO_PIN_MAP(port, pin).
+  const uint32_t gpio_pin;  ///< The result of NRF_GPIO_PIN_MAP(port, pin).
 } ButtonComConfig;
 
 #define NRF5_GPIO_RESOURCE_EXISTS ((void *)1)
 typedef struct {
-  void *gpio; ///< For compatibility, GPIO_RESOURCE_EXISTS if this is in use, NULL if not.
-  const uint32_t gpio_pin; ///< The result of NRF_GPIO_PIN_MAP(port, pin).
+  void *gpio;  ///< For compatibility, GPIO_RESOURCE_EXISTS if this is in use, NULL if not.
+  const uint32_t gpio_pin;  ///< The result of NRF_GPIO_PIN_MAP(port, pin).
 } InputConfig;
 
 #if 0
@@ -117,16 +114,16 @@ typedef struct {
 } TimerIrqConfig;
 
 typedef struct {
-  void *gpio; ///< For compatibility, GPIO_RESOURCE_EXISTS if this is in use, NULL if not.
-  const uint32_t gpio_pin; ///< The result of NRF_GPIO_PIN_MAP(port, pin).
-  bool active_high; ///< Pin is active high or active low
+  void *gpio;  ///< For compatibility, GPIO_RESOURCE_EXISTS if this is in use, NULL if not.
+  const uint32_t gpio_pin;  ///< The result of NRF_GPIO_PIN_MAP(port, pin).
+  bool active_high;         ///< Pin is active high or active low
 } OutputConfig;
 
 //! Alternate function pin configuration
 //! Used to configure a pin for use by a peripheral
 typedef struct {
-  void *gpio; ///< For compatibility, GPIO_RESOURCE_EXISTS if this is in use, NULL if not.
-  const uint32_t gpio_pin; ///< The result of NRF_GPIO_PIN_MAP(port, pin).
+  void *gpio;  ///< For compatibility, GPIO_RESOURCE_EXISTS if this is in use, NULL if not.
+  const uint32_t gpio_pin;  ///< The result of NRF_GPIO_PIN_MAP(port, pin).
 } AfConfig;
 
 typedef struct {
@@ -166,16 +163,16 @@ typedef struct {
 } MicConfig;
 
 typedef enum {
-  OptionNotPresent = 0, // FIXME
+  OptionNotPresent = 0,  // FIXME
   OptionActiveLowOpenDrain,
   OptionActiveHigh
 } PowerCtl5VOptions;
 
 typedef enum {
-  ActuatorOptions_Ctl = 1 << 0, ///< GPIO is used to enable / disable vibe
-  ActuatorOptions_Pwm = 1 << 1, ///< PWM control
-  ActuatorOptions_IssiI2C = 1 << 2, ///< I2C Device, currently used for V1_5 -> OG steel backlight
-  ActuatorOptions_HBridge = 1 << 3, //< PWM actuates an H-Bridge, requires ActuatorOptions_PWM
+  ActuatorOptions_Ctl = 1 << 0,      ///< GPIO is used to enable / disable vibe
+  ActuatorOptions_Pwm = 1 << 1,      ///< PWM control
+  ActuatorOptions_IssiI2C = 1 << 2,  ///< I2C Device, currently used for V1_5 -> OG steel backlight
+  ActuatorOptions_HBridge = 1 << 3,  //< PWM actuates an H-Bridge, requires ActuatorOptions_PWM
 } ActuatorOptions;
 
 typedef struct {
@@ -202,17 +199,20 @@ typedef struct {
 
   // Display Configuration
   /////////////////////////////////////////////////////////////////////////////
-  const OutputConfig lcd_com; //!< This needs to be pulsed regularly to keep the sharp display fresh.
+  const OutputConfig
+      lcd_com;  //!< This needs to be pulsed regularly to keep the sharp display fresh.
 
   //! Controls power to the sharp display
   const PowerCtl5VOptions power_5v0_options;
   const OutputConfig power_ctl_5v0;
 
-  const uint8_t backlight_on_percent; // percent of max possible brightness
-  const uint8_t backlight_max_duty_cycle_percent; // Calibrated such that the preceived brightness
-                    // of "backlight_on_percent = 100" (and all other values, to a reasonable
-                    // tolerance) is identical across all platforms. >100% isn't possible, so
-                    // future backlights must be at least as bright as Tintin's.
+  const uint8_t backlight_on_percent;  // percent of max possible brightness
+  const uint8_t
+      backlight_max_duty_cycle_percent;  // Calibrated such that the preceived brightness
+                                         // of "backlight_on_percent = 100" (and all other values,
+                                         // to a reasonable tolerance) is identical across all
+                                         // platforms. >100% isn't possible, so future backlights
+                                         // must be at least as bright as Tintin's.
 
   // FPC Pinstrap Configuration
   /////////////////////////////////////////////////////////////////////////////
@@ -292,13 +292,13 @@ typedef struct {
   const ActuatorOptions options;
   const OutputConfig ctl;
   const PwmConfig pwm;
-  const uint16_t vsys_scale; //< Voltage to scale duty cycle to in mV. 0 if no scaling should occur.
-                             //< For example, Silk VBat may droop to 3.3V, so we scale down vibe
-                             //< duty cycle so that 100% duty cycle will always be 3.3V RMS.
+  const uint16_t vsys_scale;  //< Voltage to scale duty cycle to in mV. 0 if no scaling should
+                              // occur. < For example, Silk VBat may droop to 3.3V, so we scale down
+                              // vibe < duty cycle so that 100% duty cycle will always be 3.3V RMS.
 } BoardConfigActuator;
 
 typedef struct {
-  const OutputConfig power_en; //< Enable power supply to the accessory connector.
+  const OutputConfig power_en;  //< Enable power supply to the accessory connector.
   const InputConfig int_gpio;
   const GpioteConfig gpiote;
 } BoardConfigAccessory;
@@ -309,9 +309,7 @@ typedef struct {
   const InputConfig an_cfg;
 } BoardConfigMCO1;
 
-typedef enum {
-  SpiPeriphClockNrf5
-} SpiPeriphClock;
+typedef enum { SpiPeriphClockNrf5 } SpiPeriphClock;
 
 typedef struct {
   nrfx_spim_t spi;

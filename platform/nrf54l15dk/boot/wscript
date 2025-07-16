@@ -23,8 +23,8 @@ def options(opt):
 
 def configure(conf):
     CPU_FLAGS = [
-        '-mcpu=cortex-m4', '-mthumb',
-        '-mfpu=fpv4-sp-d16', '-mfloat-abi=softfp',
+        '-mcpu=cortex-m33', '-mthumb',
+        '-mfpu=fpv5-sp-d16', '-mfloat-abi=softfp',
         ]
     OPT_FLAGS = [ '-Os' ,'-g' ]
     C_FLAGS = [

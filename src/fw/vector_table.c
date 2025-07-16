@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-#include "util/attributes.h"
-
 #include <stdbool.h>
 #include <stdint.h>
+
+#include "util/attributes.h"
 
 extern uint8_t _estack[];
 extern void Reset_Handler(void);
@@ -27,7 +27,8 @@ void Default_Handler(void) {
   // handler for the interrupt. This means the interrupt is unexpected,
   // so we loop infinitely to preserve the system state for examination
   // by a debugger
-  while (true) {}
+  while (true) {
+  }
 }
 
 // All these functions are weak references to the Default_Handler,
@@ -46,58 +47,61 @@ ALIAS("Default_Handler") void SysTick_Handler(void);
 // External Interrupts
 #define IRQ_DEF(idx, irq) ALIAS("Default_Handler") void irq##_IRQHandler(void);
 #if defined(MICRO_FAMILY_NRF52840)
-# include "irq_nrf52840.def"
+#include "irq_nrf52840.def"
+#elif defined(MICRO_FAMILY_NRF54L15)
+#include "irq_nrf54l15.def"
 #else
-# include "irq_stm32.def"
+#include "irq_stm32.def"
 #endif
 #undef IRQ_DEF
-
 
 #if PROFILE_INTERRUPTS
 #include "system/profiler.h"
-#define IRQ_DEF(idx, irq) static inline void irq##_IRQHandler_profiled(void) { \
-  extern ProfilerNode g_profiler_node_##irq##_IRQ; \
-  g_profiler_node_##irq##_IRQ.start = DWT->CYCCNT; \
-  irq##_IRQHandler();\
-  profiler_node_stop(&g_profiler_node_##irq##_IRQ, DWT->CYCCNT); \
-}
+#define IRQ_DEF(idx, irq)                                          \
+  static inline void irq##_IRQHandler_profiled(void) {             \
+    extern ProfilerNode g_profiler_node_##irq##_IRQ;               \
+    g_profiler_node_##irq##_IRQ.start = DWT->CYCCNT;               \
+    irq##_IRQHandler();                                            \
+    profiler_node_stop(&g_profiler_node_##irq##_IRQ, DWT->CYCCNT); \
+  }
 #if defined(MICRO_FAMILY_NRF52840)
-# include "irq_nrf52.def"
+#include "irq_nrf52.def"
 #else
-# include "irq_stm32.def"
+#include "irq_stm32.def"
 #endif
 #undef IRQ_DEF
-#endif // PROFILE_INTERRUPTS
+#endif  // PROFILE_INTERRUPTS
 
+EXTERNALLY_VISIBLE SECTION(".isr_vector") const void *const vector_table[] = {
+    _estack,
+    Reset_Handler,
+    NMI_Handler,
+    HardFault_Handler,
+    MemManage_Handler,
+    BusFault_Handler,
+    UsageFault_Handler,
+    (void *)0x4E65576F,  // NeWo, marks image as New World for bootloader
+    0,
+    0,
+    0,
+    SVC_Handler,
+    DebugMon_Handler,
+    0,
+    PendSV_Handler,
+    SysTick_Handler,
 
-EXTERNALLY_VISIBLE SECTION(".isr_vector") const void * const vector_table[] = {
-  _estack,
-  Reset_Handler,
-  NMI_Handler,
-  HardFault_Handler,
-  MemManage_Handler,
-  BusFault_Handler,
-  UsageFault_Handler,
-  (void *)0x4E65576F, // NeWo, marks image as New World for bootloader
-  0,
-  0,
-  0,
-  SVC_Handler,
-  DebugMon_Handler,
-  0,
-  PendSV_Handler,
-  SysTick_Handler,
-
-  // External Interrupts
+// External Interrupts
 #if PROFILE_INTERRUPTS
 #define IRQ_DEF(idx, irq) [idx + 16] = irq##_IRQHandler_profiled,
 #else
 #define IRQ_DEF(idx, irq) [idx + 16] = irq##_IRQHandler,
 #endif
 #if defined(MICRO_FAMILY_NRF52840)
-# include "irq_nrf52840.def"
+#include "irq_nrf52840.def"
+#elif defined(MICRO_FAMILY_NRF54L15)
+#include "irq_nrf54l15.def"
 #else
-# include "irq_stm32.def"
+#include "irq_stm32.def"
 #endif
 #undef IRQ_DEF
 };

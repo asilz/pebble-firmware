@@ -37,7 +37,7 @@
 #include "flash_region_n25q.h"
 #elif PLATFORM_SILK
 #include "flash_region_mx25u.h"
-#elif PLATFORM_ASTERIX || PLATFORM_NRF52840DK
+#elif PLATFORM_ASTERIX || PLATFORM_NRF52840DK || PLATFORM_NRF54L15DK
 #include "flash_region_gd25lq255e.h"
 #elif PLATFORM_CALCULUS || PLATFORM_ROBERT
 #include "flash_region_mt25q.h"

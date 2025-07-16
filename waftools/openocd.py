@@ -171,7 +171,7 @@ def write_cfg(conf):
     elif conf.env.MICRO_FAMILY == 'NRF52840':
         target = 'nrf52.cfg'
     elif conf.env.MICRO_FAMILY == 'NRF54L15':
-        target = 'nrf54l15.cfg'
+        target = 'nrf54.cfg' # This does not exist in openocd
 
     is_pebble_flavor = get_flavor(conf)
 

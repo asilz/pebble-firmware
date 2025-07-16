@@ -74,7 +74,7 @@ def build(bld):
             'port/include/cc2564x',
         ] + nimble_includes
 
-    elif bld.env.bt_controller == 'nrf52':
+    elif bld.env.bt_controller == 'nrf52' or bld.env.bt_controller == 'nrf54':
         nimble_sources += bld.path.ant_glob([
             'mynewt-nimble/nimble/transport/sdc/src/*.c',
             #'mynewt-nimble/nimble/drivers/nrf5x/src/*.c',

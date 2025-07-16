@@ -66,7 +66,7 @@
 #endif
 #pragma GCC diagnostic pop
 #elif defined(MICRO_FAMILY_NRF54L15)
-#if !defined(NRF52840_COMPATIBLE) && !defined(CMSIS_COMPATIBLE) && !defined(NRF5_COMPATIBLE)
+#if !defined(NRF54L15_COMPATIBLE) && !defined(CMSIS_COMPATIBLE) && !defined(NRF5_COMPATIBLE)
 #error "Source is incompatible with the target MCU"
 #endif
 #pragma GCC diagnostic push
@@ -90,5 +90,6 @@
 #undef STM32F2_COMPATIBLE
 #undef STM32F4_COMPATIBLE
 #undef STM32F7_COMPATIBLE
+#undef NRF54L15_COMPATIBLE
 #undef NRF52840_COMPATIBLE
 #undef NRF5_COMPATIBLE

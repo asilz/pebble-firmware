@@ -38,7 +38,7 @@ def configure(conf):
     conf.load('gcc')
 
     pebble_cflags = ['-std=c99',
-                     '-mcpu=cortex-m3',
+                     '-mcpu=cortex-m33',
                      '-mthumb',
                      '-ffunction-sections',
                      '-fdata-sections',
@@ -56,7 +56,7 @@ def configure(conf):
         pebble_cflags.append('-D_TIME_H_')
     pebble_cflags.extend(c_warnings)
 
-    pebble_linkflags = ['-mcpu=cortex-m3',
+    pebble_linkflags = ['-mcpu=cortex-m33',
                         '-mthumb',
                         '-Wl,--gc-sections',
                         '-Wl,--warn-common',

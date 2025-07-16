@@ -16,8 +16,8 @@
 
 #pragma once
 
-#include <stdint.h>
 #include <stdbool.h>
+#include <stdint.h>
 
 #if PLATFORM_TINTIN || PLATFORM_SNOWY || PLATFORM_SPALDING
 enum {
@@ -35,7 +35,8 @@ enum {
 
   NUM_OTP_SLOTS = 16,
 };
-#elif PLATFORM_SILK || PLATFORM_ASTERIX || PLATFORM_CALCULUS || PLATFORM_ROBERT || PLATFORM_NRF52840DK
+#elif PLATFORM_SILK || PLATFORM_ASTERIX || PLATFORM_CALCULUS || PLATFORM_ROBERT || \
+    PLATFORM_NRF52840DK || PLATFORM_NRF54L15DK
 enum {
   OTP_HWVER1 = 0,
   OTP_HWVER2 = 1,
@@ -65,8 +66,8 @@ typedef enum {
   OtpWriteFailCorrupt = 2,
 } OtpWriteResult;
 
-uint8_t * otp_get_lock(const uint8_t index);
+uint8_t *otp_get_lock(const uint8_t index);
 bool otp_is_locked(const uint8_t index);
 
-char * otp_get_slot(const uint8_t index);
+char *otp_get_slot(const uint8_t index);
 OtpWriteResult otp_write_slot(const uint8_t index, const char *value);

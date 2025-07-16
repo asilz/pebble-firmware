@@ -1,0 +1,76 @@
+#define REVERSE_IRQ_DEF(a, b) IRQ_DEF(b, a) /* ... lol ... */
+/* =======================================  ARM Cortex-M4 Specific Interrupt Numbers
+ * ======================================== */
+#if 0
+  Reset                = -15,              /*!< -15  Reset Vector, invoked on Power up and warm reset                     */
+  NonMaskableInt       = -14,              /*!< -14  Non maskable Interrupt, cannot be stopped or preempted               */
+  HardFault            = -13,              /*!< -13  Hard Fault, all classes of Fault                                     */
+  MemoryManagement     = -12,              /*!< -12  Memory Management, MPU mismatch, including Access Violation
+                                                     and No Match                                                              */
+  BusFault             = -11,              /*!< -11  Bus Fault, Pre-Fetch-, Memory Access Fault, other address/memory
+                                                     related Fault                                                             */
+  UsageFault           = -10,              /*!< -10  Usage Fault, i.e. Undef Instruction, Illegal State Transition        */
+  SVCall               =  -5,              /*!< -5 System Service Call via SVC instruction                                */
+  DebugMonitor         =  -4,              /*!< -4 Debug Monitor                                                          */
+  PendSV               =  -2,              /*!< -2 Pendable request for system service                                    */
+  SysTick              =  -1,              /*!< -1 System Tick Timer                                                      */
+#endif
+/* ==========================================  nrf52840 Specific Interrupt Numbers
+ * ========================================== */
+REVERSE_IRQ_DEF(SWI00, 28)
+REVERSE_IRQ_DEF(SWI01, 29)
+REVERSE_IRQ_DEF(SWI02, 30)
+REVERSE_IRQ_DEF(SWI03, 31)
+REVERSE_IRQ_DEF(SPU00, 64)
+REVERSE_IRQ_DEF(MPC00, 65)
+REVERSE_IRQ_DEF(AAR00_CCM00, 70)
+REVERSE_IRQ_DEF(ECB00, 71)
+REVERSE_IRQ_DEF(CRACEN, 72)
+REVERSE_IRQ_DEF(SERIAL00, 74)
+REVERSE_IRQ_DEF(RRAMC, 75)
+REVERSE_IRQ_DEF(VPR00, 76)
+REVERSE_IRQ_DEF(CTRLAP, 82)
+REVERSE_IRQ_DEF(CM33SS, 84)
+REVERSE_IRQ_DEF(TIMER00, 85)
+REVERSE_IRQ_DEF(SPU10, 128)
+REVERSE_IRQ_DEF(TIMER10, 133)
+REVERSE_IRQ_DEF(EGU10, 135)
+REVERSE_IRQ_DEF(RADIO_0, 138)
+REVERSE_IRQ_DEF(RADIO_1, 139)
+REVERSE_IRQ_DEF(SPU20, 192)
+REVERSE_IRQ_DEF(SERIAL20, 198)
+REVERSE_IRQ_DEF(SERIAL21, 199)
+REVERSE_IRQ_DEF(SERIAL22, 200)
+REVERSE_IRQ_DEF(EGU20, 201)
+REVERSE_IRQ_DEF(TIMER20, 202)
+REVERSE_IRQ_DEF(TIMER21, 203)
+REVERSE_IRQ_DEF(TIMER22, 204)
+REVERSE_IRQ_DEF(TIMER23, 205)
+REVERSE_IRQ_DEF(TIMER24, 206)
+REVERSE_IRQ_DEF(PDM20, 208)
+REVERSE_IRQ_DEF(PDM21, 209)
+REVERSE_IRQ_DEF(PWM20, 210)
+REVERSE_IRQ_DEF(PWM21, 211)
+REVERSE_IRQ_DEF(PWM22, 212)
+REVERSE_IRQ_DEF(SAADC, 213)
+REVERSE_IRQ_DEF(NFCT, 214)
+REVERSE_IRQ_DEF(TEMP, 215)
+REVERSE_IRQ_DEF(GPIOTE20_0, 218)
+REVERSE_IRQ_DEF(GPIOTE20_1, 219)
+REVERSE_IRQ_DEF(TAMPC, 220)
+REVERSE_IRQ_DEF(I2S20, 221)
+REVERSE_IRQ_DEF(QDEC20, 224)
+REVERSE_IRQ_DEF(QDEC21, 225)
+REVERSE_IRQ_DEF(GRTC_0, 226)
+REVERSE_IRQ_DEF(GRTC_1, 227)
+REVERSE_IRQ_DEF(GRTC_2, 228)
+REVERSE_IRQ_DEF(GRTC_3, 229)
+REVERSE_IRQ_DEF(SPU30, 256)
+REVERSE_IRQ_DEF(SERIAL30, 260)
+REVERSE_IRQ_DEF(CLOCK_POWER, 261)
+REVERSE_IRQ_DEF(COMP_LPCOMP, 262)
+REVERSE_IRQ_DEF(WDT30, 264)
+REVERSE_IRQ_DEF(WDT31, 265)
+REVERSE_IRQ_DEF(GPIOTE30_0, 268)
+REVERSE_IRQ_DEF(GPIOTE30_1, 269)
+#undef REVERSE_IRQ_DEF

@@ -522,7 +522,7 @@ def configure(conf):
     elif conf.is_asterix() or conf.is_nrf52840dk():
         conf.env.bt_controller = 'nrf52'
         conf.env.append_value('DEFINES', ['BT_CONTROLLER_NRF52'])
-    elif conf.is_asterix() or conf.is_nrf54l15dk():
+    elif conf.is_nrf54l15dk():
         conf.env.bt_controller = 'nrf54'
         conf.env.append_value('DEFINES', ['BT_CONTROLLER_NRF54'])
     elif bt_board in ('silk_bb2', 'silk', 'robert_bb2', 'robert_evt'):
