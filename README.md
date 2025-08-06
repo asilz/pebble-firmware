@@ -14,39 +14,12 @@ This is free software; see the source for copying conditions.  There is NO
 warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 ```
 
-:::::{tab-set}
-:sync-group: os
-
-::::{tab-item} Ubuntu 24.04 LTS
-:sync: ubuntu
-
-1. Update package list:
-
+2.
 ```shell
 sudo apt update
-```
-
-2. Install required dependencies
-
-```shell
 sudo apt install clang gcc gcc-multilib git gettext python3-dev python3-venv
 ```
 
-::::
-::::{tab-item} macOS
-:sync: macos
-
-1. Install [brew](https://brew.sh/).
-
-2. Link `brew` Python:
-
-```shell
-brew link python@3
-```
-
-::::
-
-:::::
 3.
 
 Install Emscripten SDK as detailed [here](https://emscripten.org/docs/getting_started/downloads.html). Pick version `4.0.7` instead of `latest` when running `./emsdk install` or `./emsdk activate`. To conveniently access Emscripten SDK tools, the activate command will offer some suggestions — it is recommended to follow them.
@@ -54,14 +27,14 @@ Install Emscripten SDK as detailed [here](https://emscripten.org/docs/getting_st
 
 ### Get the source code
 
-```
+```shell
 git clone --recurse-submodules https://github.com/asilz/pebble-firmware.git
 cd pebble-firmware
 ```
 
 ### Python dependencies
 A series of additional Python dependencies are also required. Follow the next steps to install them in a [Python virtual environment](https://docs.python.org/3/library/venv.html).
-```
+```shell
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
@@ -69,12 +42,12 @@ pip install -r requirements.txt
 
 ### Building
 
-```
+```shell
 ./waf configure --board=nrf52840dk --nojs --gdb
 ./waf build
 ```
 ### Build bootloader
-```
+```shell
 cd platform/nrf52840dk/boot
 ./waf configure
 ./waf build
@@ -82,11 +55,11 @@ cd platform/nrf52840dk/boot
 
 ### Flashing
 This flashes both the bootloader and the firmware.
-```
+```shell
 openocd -f openocd.cfg -c "init; reset halt; program platform/nrf52840dk/boot/build/tintin_boot.elf;program build/src/fw/tintin_fw.hex reset; ; shutdown" 2>&1 | tee .waf.openocd.log
 ```
 If you only need to flash the firmware you can use the following command:
-```
+```shell
 ./waf flash
 ```
 # Changes
