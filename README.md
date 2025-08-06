@@ -65,5 +65,5 @@ If you only need to flash the firmware you can use the following command:
 # Changes
 - Edited [third_party/nimble/wscript](third_party/nimble/wscript) to link Nordic Softdevice Controller link layer instead of Nimble's link lyaer.
 - Added new target `nrf52840dk`, changes and additions can be found in directiories: [src/fw/mfg/nrf52840dk](src/fw/mfg/nrf52840dk), [platform/nrf52840dk](platform/nrf52840dk), and  [resources/normal/nrf52840dk](resources/normal/nrf52840dk).
-- Added Nordic Softdevice Controller Link Layer to Nimble. Changes can be found in [third_party/nimble/mynewt-nimble](https://github.com/asilz/mynewt-nimble/tree/0c47225d0fcf2bf410c84c64a8934aa4bff6d2e5) which is a submodule of this repo, for more details follow the link.
+- Added Nordic Softdevice Controller Link Layer to Nimble. Changes can be found in [third_party/nimble/mynewt-nimble](https://github.com/asilz/mynewt-nimble/tree/0c47225d0fcf2bf410c84c64a8934aa4bff6d2e5) which is a submodule of this repo — for more details follow the link.
 - Various big fixes.
