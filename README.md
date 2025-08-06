@@ -1,12 +1,8 @@
-## Resources
-
-Here's a quick summary of resources to help you find your way around:
-
-### Getting Started
+# Getting Started
 
 ## Ubuntu
 
-# Pre-requisites
+### Pre-requisites
 
 1.
 
@@ -20,8 +16,6 @@ This is free software; see the source for copying conditions.  There is NO
 warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 ```
 
-
-
 2.
 
 ```
@@ -33,17 +27,14 @@ sudo apt install clang gcc gcc-multilib git gettext python3-dev python3-venv
 Install Emscripten SDK as detailed [here](https://emscripten.org/docs/getting_started/downloads.html). Pick version 4.0.7 instead of latest when running ./emsdk install or ./emsdk activate. To conveniently access Emscripten SDK tools, the activate command will offer some suggestions. It is recommended to follow them.
 
 
-# Get the source code
-1.
+### Get the source code
 
 ```
 git clone --recurse-submodules https://github.com/asilz/pebble-firmware.git
 cd pebble-firmware
 ```
 
-# Python dependencies
-
-1.
+### Python dependencies
 
 ```
 python3 -m venv .venv
@@ -51,16 +42,14 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-# Building
-
-1.
+### Building
 
 ```
 ./waf configure --board=nrf52840dk --nojs --gdb
 ./waf build
 ```
 
-# Flashing
+### Flashing
 
 ```
 ./waf flash
