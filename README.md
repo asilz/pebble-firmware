@@ -56,6 +56,7 @@ cd platform/nrf52840dk/boot
 
 ### Flashing
 This flashes both the bootloader and the firmware.
+Return to root directory before running this command.
 ```shell
 openocd -f openocd.cfg -c "init; reset halt; program platform/nrf52840dk/boot/build/tintin_boot.elf;program build/src/fw/tintin_fw.hex reset; ; shutdown" 2>&1 | tee .waf.openocd.log
 ```
@@ -63,6 +64,13 @@ If you only need to flash the firmware you can use the following command:
 ```shell
 ./waf flash
 ```
+
+To see serial output from the dk using picocom:
+```shell
+picocom /dev/ttyACM0 -b 1000000
+```
+The path to the device may not be the same as in the above example.
+
 # Changes
 - Edited [third_party/nimble/wscript](third_party/nimble/wscript) to link Nordic Softdevice Controller link layer instead of Nimble's link lyaer.
 - Added new target `nrf52840dk`, changes and additions can be found in directiories: [src/fw/mfg/nrf52840dk](src/fw/mfg/nrf52840dk), [platform/nrf52840dk](platform/nrf52840dk), and  [resources/normal/nrf52840dk](resources/normal/nrf52840dk).
