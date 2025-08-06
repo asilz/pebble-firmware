@@ -15,14 +15,20 @@
  */
 
 #include "event_loop.h"
-#include "events.h"
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdint.h>
+#include <bluetooth/bluetooth_types.h>
+#include <bluetooth/bt_driver_advert.h>
+#include <bluetooth/init.h>
+#include <bluetooth/pebble_bt.h>
+#include <bluetooth/pebble_pairing_service.h>
+#include <bluetooth/reconnect.h>
 #include <inttypes.h>
 #include <stdbool.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
 
+#include "FreeRTOS.h"
 #include "applib/app_launch_reason.h"
 #include "applib/battery_state_service.h"
 #include "applib/connection_service.h"
@@ -35,12 +41,13 @@
 #include "applib/ui/window.h"
 #include "applib/ui/window_private.h"
 #include "comm/ble/kernel_le_client/kernel_le_client.h"
-#include "console/serial_console.h"
 #include "console/prompt.h"
+#include "console/serial_console.h"
 #include "drivers/backlight.h"
 #include "drivers/battery.h"
 #include "drivers/button.h"
 #include "drivers/task_watchdog.h"
+#include "events.h"
 #include "kernel/kernel_applib_state.h"
 #include "kernel/low_power.h"
 #include "kernel/panic.h"
@@ -57,8 +64,8 @@
 #include "process_management/worker_manager.h"
 #include "resource/resource_ids.auto.h"
 #include "services/common/analytics/analytics.h"
-#include "services/common/battery/battery_state.h"
 #include "services/common/battery/battery_monitor.h"
+#include "services/common/battery/battery_state.h"
 #include "services/common/compositor/compositor.h"
 #include "services/common/cron.h"
 #include "services/common/debounced_connection_service.h"
@@ -91,25 +98,22 @@
 #include "system/passert.h"
 #include "system/reset.h"
 #include "system/testinfra.h"
+#include "system/version.h"
+#include "task.h"
 #include "util/bitset.h"
 #include "util/struct.h"
-#include "system/version.h"
-
-#include <bluetooth/reconnect.h>
-
-#include "FreeRTOS.h"
-#include "task.h"
 
 static const uint32_t FORCE_QUIT_HOLD_MS = 1500;
 static int s_back_hold_timer = TIMER_INVALID_ID;
 
 void launcher_task_add_callback(void (*callback)(void *data), void *data) {
   PebbleEvent event = {
-    .type = PEBBLE_CALLBACK_EVENT,
-    .callback = {
-      .callback = callback,
-      .data = data,
-    },
+      .type = PEBBLE_CALLBACK_EVENT,
+      .callback =
+          {
+              .callback = callback,
+              .data = data,
+          },
   };
   event_put(&event);
 }
@@ -120,7 +124,7 @@ bool launcher_task_is_current_task(void) {
 
 //! Return true if event could cause pop-up
 //! Used in getting started and during firmware update
-static bool launcher_is_popup_event(PebbleEvent* e) {
+static bool launcher_is_popup_event(PebbleEvent *e) {
   switch (e->type) {
     case PEBBLE_SYS_NOTIFICATION_EVENT:
     case PEBBLE_ALARM_CLOCK_EVENT:
@@ -143,13 +147,9 @@ void launcher_block_popups(bool block) {
   }
 }
 
-bool launcher_popups_are_blocked(void) {
-  return s_block_popup_count > 0;
-}
+bool launcher_popups_are_blocked(void) { return s_block_popup_count > 0; }
 
-void launcher_cancel_force_quit(void) {
-  new_timer_stop(s_back_hold_timer);
-}
+void launcher_cancel_force_quit(void) { new_timer_stop(s_back_hold_timer); }
 
 static void launcher_force_quit_app(void *data) {
   if (low_power_is_active() || factory_reset_ongoing()) {
@@ -165,7 +165,7 @@ static void back_button_force_quit_handler(void *data) {
   launcher_task_add_callback(launcher_force_quit_app, NULL);
 }
 
-static void launcher_handle_button_event(PebbleEvent* e) {
+static void launcher_handle_button_event(PebbleEvent *e) {
   ButtonId button_id = e->button.button_id;
   const bool watchface_running = app_manager_is_watchface_running();
 
@@ -174,11 +174,11 @@ static void launcher_handle_button_event(PebbleEvent* e) {
     analytics_inc(ANALYTICS_DEVICE_METRIC_BUTTON_PRESSED_COUNT, AnalyticsClient_System);
 
     if (button_id == BUTTON_ID_BACK && !watchface_running &&
-        process_metadata_get_run_level(
-            app_manager_get_current_app_md()) == ProcessAppRunLevelNormal) {
+        process_metadata_get_run_level(app_manager_get_current_app_md()) ==
+            ProcessAppRunLevelNormal) {
       // Start timer for force-quitting app
-      bool success = new_timer_start(s_back_hold_timer, FORCE_QUIT_HOLD_MS, back_button_force_quit_handler, NULL,
-                                     0 /*flags*/);
+      bool success = new_timer_start(s_back_hold_timer, FORCE_QUIT_HOLD_MS,
+                                     back_button_force_quit_handler, NULL, 0 /*flags*/);
       PBL_ASSERTN(success);
     }
     light_button_pressed();
@@ -197,8 +197,8 @@ static void launcher_handle_button_event(PebbleEvent* e) {
     return;
   }
 
-  const bool is_modal_focused = (modal_manager_get_enabled() &&
-                                 !(modal_manager_get_properties() & ModalProperty_Unfocused));
+  const bool is_modal_focused =
+      (modal_manager_get_enabled() && !(modal_manager_get_properties() & ModalProperty_Unfocused));
   if (is_modal_focused) {
     // mask the app task if a modal is on top
     e->task_mask |= 1 << PebbleTask_App;
@@ -215,7 +215,7 @@ static void launcher_handle_button_event(PebbleEvent* e) {
 
 // This function should handle very basic events (Button clicks, app launching, battery events,
 // crashes, etc.
-static NOINLINE void prv_minimal_event_handler(PebbleEvent* e) {
+static NOINLINE void prv_minimal_event_handler(PebbleEvent *e) {
   switch (e->type) {
     case PEBBLE_BUTTON_DOWN_EVENT:
     case PEBBLE_BUTTON_UP_EVENT:
@@ -264,19 +264,19 @@ static NOINLINE void prv_minimal_event_handler(PebbleEvent* e) {
 
     case PEBBLE_APP_LAUNCH_EVENT:
       if (!app_install_is_app_running(e->launch_app.id)) {
-        process_manager_launch_process(&(ProcessLaunchConfig) {
-          .id = e->launch_app.id,
-          .common = NULL_SAFE_FIELD_ACCESS(e->launch_app.data, common, (LaunchConfigCommon) {}),
+        process_manager_launch_process(&(ProcessLaunchConfig){
+            .id = e->launch_app.id,
+            .common = NULL_SAFE_FIELD_ACCESS(e->launch_app.data, common, (LaunchConfigCommon){}),
         });
       }
       return;
 
     case PEBBLE_WORKER_LAUNCH_EVENT:
       if (!app_install_is_worker_running(e->launch_app.id)) {
-        process_manager_launch_process(&(ProcessLaunchConfig) {
-          .id = e->launch_app.id,
-          .common = NULL_SAFE_FIELD_ACCESS(e->launch_app.data, common, (LaunchConfigCommon) {}),
-          .worker = true,
+        process_manager_launch_process(&(ProcessLaunchConfig){
+            .id = e->launch_app.id,
+            .common = NULL_SAFE_FIELD_ACCESS(e->launch_app.data, common, (LaunchConfigCommon){}),
+            .worker = true,
         });
       }
       return;
@@ -307,7 +307,7 @@ static NOINLINE void prv_handle_app_fetch_request_event(PebbleEvent *e) {
   app_fetch_binaries(&entry.uuid, e->app_fetch_request.id, has_worker);
 }
 
-static NOINLINE void prv_extended_event_handler(PebbleEvent* e) {
+static NOINLINE void prv_extended_event_handler(PebbleEvent *e) {
   switch (e->type) {
     case PEBBLE_APP_OUTBOX_MSG_EVENT:
       e->app_outbox_msg.callback(e->app_outbox_msg.data);
@@ -335,8 +335,7 @@ static NOINLINE void prv_extended_event_handler(PebbleEvent* e) {
 #endif
       return;
 
-    case PEBBLE_SET_TIME_EVENT:
-    {
+    case PEBBLE_SET_TIME_EVENT: {
 #ifndef RECOVERY_FW
       PebbleSetTimeEvent *set_time_info = &e->set_time_info;
 
@@ -345,8 +344,7 @@ static NOINLINE void prv_extended_event_handler(PebbleEvent* e) {
       // time to propagate to the watch). Thus only update our alarm time if
       // the timezone has changed or a 'substantial' time has passed, or DST
       // state has changed.
-      if (set_time_info->gmt_offset_delta != 0 ||
-          set_time_info->dst_changed ||
+      if (set_time_info->gmt_offset_delta != 0 || set_time_info->dst_changed ||
           ABS(set_time_info->utc_time_delta) > 15) {
         alarm_handle_clock_change();
         wakeup_handle_clock_change();
@@ -387,9 +385,7 @@ static NOINLINE void prv_extended_event_handler(PebbleEvent* e) {
 }
 
 //! Tasks that have to be done in between each event.
-static void event_loop_upkeep(void) {
-  modal_manager_event_loop_upkeep();
-}
+static void event_loop_upkeep(void) { modal_manager_event_loop_upkeep(); }
 
 // NOTE: Marking this as NOINLINE saves us 150+ bytes on the KernelMain stack
 static void NOINLINE prv_handle_event(PebbleEvent *e) {
@@ -443,13 +439,13 @@ static NOINLINE void prv_launcher_main_loop_init(void) {
   task_watchdog_bit_set(PebbleTask_KernelMain);
 
   // if we are in launcher panic, don't turn on any extra services.
-  const RunLevel run_level = launcher_panic_get_current_error() ? RunLevel_BareMinimum
-                                                                : RunLevel_Normal;
+  const RunLevel run_level =
+      launcher_panic_get_current_error() ? RunLevel_BareMinimum : RunLevel_Normal;
   // services_set_runlevel(run_level);
 
   // emulate a button press-and-release to turn on/off the backlight
-  //light_button_pressed();
-  //light_button_released();
+  // light_button_pressed();
+  // light_button_released();
 
 #ifndef RECOVERY_FW
   // i18n_set_resource(RESOURCE_ID_STRINGS);
@@ -466,9 +462,9 @@ static NOINLINE void prv_launcher_main_loop_init(void) {
   } else if (boot_bit_test(BOOT_BIT_FW_START_FAIL_STRIKE_TWO)) {
     PBL_LOG(LOG_LEVEL_INFO, "Not launching worker because of 2 strikes");
   } else {
-    process_manager_launch_process(&(ProcessLaunchConfig) {
-      .id = worker_manager_get_default_install_id(),
-      .worker = true,
+    process_manager_launch_process(&(ProcessLaunchConfig){
+        .id = worker_manager_get_default_install_id(),
+        .worker = true,
     });
   }
 #endif
@@ -482,6 +478,7 @@ void launcher_main_loop(void) {
 
   prv_launcher_main_loop_init();
 
+  while (1);
   while (1) {
     task_watchdog_bit_set(PebbleTask_KernelMain);
 

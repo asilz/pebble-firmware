@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+#include <bluetooth/pairability.h>
 #include <setjmp.h>
 #include <stdio.h>
 
@@ -72,6 +73,7 @@
 #include "resource/resource.h"
 #include "resource/system_resource.h"
 #include "services/common/analytics/analytics.h"
+#include "services/common/bluetooth/pairability.h"
 #include "services/common/clock.h"
 #include "services/common/compositor/compositor.h"
 #include "services/common/new_timer/new_timer.h"
@@ -182,6 +184,11 @@ int main(void) {
   SCB->VTOR = (uint32_t)&__ISR_VECTOR_TABLE__;
 
   NVIC_SetPriorityGrouping(3);  // 4 bits for group priority; 0 bits for subpriority
+  NVIC_SetPriority(TIMER0_IRQn, 0);
+  NVIC_SetPriority(RTC0_IRQn, 0);
+  NVIC_SetPriority(CLOCK_POWER_IRQn, 1);
+  NVIC_SetPriority(RADIO_IRQn, 0);
+  NVIC_SetPriority(EGU5_SWI5_IRQn, 125);
 
   enable_fault_handlers();
 
@@ -501,10 +508,11 @@ static NOINLINE void prv_main_task_init(void) {
 
 static void main_task(void *parameter) {
   prv_main_task_init();
-  // launcher_main_loop();
 
   bt_ctl_set_enabled(true);
   gap_le_slave_set_discoverable(true);
+
+  launcher_main_loop();
 
   for (;;);
 }
