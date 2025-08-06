@@ -1,5 +1,6 @@
 # Getting Started
-
+## Ubuntu
+If using macOS you need to follow these [instructions](https://www.youtube.com/watch?v=dQw4w9WgXcQ).
 ### Pre-requisites
 
 1.
