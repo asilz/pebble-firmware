@@ -1,33 +1,67 @@
-<p align="center">
-  <img src="docs/_static/images/logo.svg">
-</p>
-
-<p align="center">
- PebbleOS 
-</p>
-
-<p align="center">
-  <a href="https://github.com/pebble-dev/pebble-firmware/actions/workflows/build-firmware.yml?query=branch%3Amain"><img src="https://github.com/pebble-dev/pebble-firmware/actions/workflows/build-firmware.yml/badge.svg?branch=main"></a>
-  <a href="https://pebbleos.readthedocs.io/en/latest"><img src="https://readthedocs.org/projects/pebbleos/badge/?version=latest&style=flat"></a>
-  <a href="https://discordapp.com/invite/aRUAYFN"><img src="https://dcbadge.limes.pink/api/server/aRUAYFN?style=flat"></a>
-</p>
-
 ## Resources
 
 Here's a quick summary of resources to help you find your way around:
 
 ### Getting Started
 
-- 📖 [Documentation](https://pebbleos.readthedocs.io/en/latest)
-- 🚀 [Getting Started Guide](https://pebbleos.readthedocs.io/en/latest/getting_started.html)
+## Ubuntu
 
-### Code and Development
+# Pre-requisites
 
-- ⌚ [Source Code Repository](https://github.com/pebble-dev/pebble-firmware)
-- 🐛 [Issue Tracker](https://github.com/pebble-dev/pebble-firmware/issues)
-- 🤝 [Contribution Guide](CONTRIBUTING.md)
+1.
 
-### Community and Support
+First download the Arm GNU toolchain arm-none-eabi 14.2.Rel1 from here. Make sure to make it available on your path PATH and then check GCC version is reported correctly:
 
-- 💬 [Discord](https://discordapp.com/invite/aRUAYFN)
-- 👥 [Discussions](https://github.com/pebble-dev/pebble-firmware/discussions)
+```
+$ arm-none-eabi-gcc --version
+arm-none-eabi-gcc (Arm GNU Toolchain 14.2.Rel1 (Build arm-14.52)) 14.2.1 20241119
+Copyright (C) 2024 Free Software Foundation, Inc.
+This is free software; see the source for copying conditions.  There is NO
+warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+```
+
+
+
+2.
+
+```
+sudo apt update
+sudo apt install clang gcc gcc-multilib git gettext python3-dev python3-venv
+```
+3.
+
+Install Emscripten SDK as detailed [here](https://emscripten.org/docs/getting_started/downloads.html). Pick version 4.0.7 instead of latest when running ./emsdk install or ./emsdk activate. To conveniently access Emscripten SDK tools, the activate command will offer some suggestions. It is recommended to follow them.
+
+
+# Get the source code
+1.
+
+```
+git clone --recurse-submodules https://github.com/asilz/pebble-firmware.git
+cd pebble-firmware
+```
+
+# Python dependencies
+
+1.
+
+```
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+```
+
+# Building
+
+1.
+
+```
+./waf configure --board=nrf52840dk --nojs --gdb
+./waf build
+```
+
+# Flashing
+
+```
+./waf flash
+```
