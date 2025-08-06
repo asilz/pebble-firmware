@@ -6,7 +6,7 @@
 
 1.
 
-First download the Arm GNU toolchain arm-none-eabi 14.2.Rel1 from here. Make sure to make it available on your path PATH and then check GCC version is reported correctly:
+First download the Arm GNU toolchain `arm-none-eabi` 14.2.Rel1 from here. Make sure to make it available on your path PATH and then check GCC version is reported correctly:
 
 ```
 $ arm-none-eabi-gcc --version
@@ -24,7 +24,7 @@ sudo apt install clang gcc gcc-multilib git gettext python3-dev python3-venv
 ```
 3.
 
-Install Emscripten SDK as detailed [here](https://emscripten.org/docs/getting_started/downloads.html). Pick version 4.0.7 instead of latest when running ./emsdk install or ./emsdk activate. To conveniently access Emscripten SDK tools, the activate command will offer some suggestions. It is recommended to follow them.
+Install Emscripten SDK as detailed [here](https://emscripten.org/docs/getting_started/downloads.html). Pick version `4.0.7` instead of `latest` when running `./emsdk install` or `./emsdk activate`. To conveniently access Emscripten SDK tools, the activate command will offer some suggestions — it is recommended to follow them.
 
 
 ### Get the source code
@@ -35,7 +35,7 @@ cd pebble-firmware
 ```
 
 ### Python dependencies
-
+A series of additional Python dependencies are also required. Follow the next steps to install them in a [Python virtual environment](https://docs.python.org/3/library/venv.html).
 ```
 python3 -m venv .venv
 source .venv/bin/activate
@@ -48,9 +48,19 @@ pip install -r requirements.txt
 ./waf configure --board=nrf52840dk --nojs --gdb
 ./waf build
 ```
+### Build bootloader
+```
+cd platform/nrf52840dk/boot
+./waf configure
+./waf build
+```
 
 ### Flashing
-
+This flashes both the bootloader and the firmware.
+```
+openocd -f openocd.cfg -c "init; reset halt; program platform/nrf52840dk/boot/build/tintin_boot.elf;program build/src/fw/tintin_fw.hex reset; ; shutdown" 2>&1 | tee .waf.openocd.log
+```
+If you only need to flash the firmware you can use the following command:
 ```
 ./waf flash
 ```
