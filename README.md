@@ -21,7 +21,7 @@ sudo apt update
 sudo apt install clang gcc gcc-multilib git gettext python3-dev python3-venv
 ```
 
-3.
+3. This step is optional.
 
 Install Emscripten SDK as detailed [here](https://emscripten.org/docs/getting_started/downloads.html). Pick version `4.0.7` instead of `latest` when running `./emsdk install` or `./emsdk activate`. To conveniently access Emscripten SDK tools, the activate command will offer some suggestions — it is recommended to follow them.
 
