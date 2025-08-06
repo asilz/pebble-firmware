@@ -1,7 +1,5 @@
 # Getting Started
 
-## Ubuntu
-
 ### Pre-requisites
 
 1.
@@ -16,12 +14,39 @@ This is free software; see the source for copying conditions.  There is NO
 warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 ```
 
-2.
+:::::{tab-set}
+:sync-group: os
 
-```
+::::{tab-item} Ubuntu 24.04 LTS
+:sync: ubuntu
+
+1. Update package list:
+
+```shell
 sudo apt update
+```
+
+2. Install required dependencies
+
+```shell
 sudo apt install clang gcc gcc-multilib git gettext python3-dev python3-venv
 ```
+
+::::
+::::{tab-item} macOS
+:sync: macos
+
+1. Install [brew](https://brew.sh/).
+
+2. Link `brew` Python:
+
+```shell
+brew link python@3
+```
+
+::::
+
+:::::
 3.
 
 Install Emscripten SDK as detailed [here](https://emscripten.org/docs/getting_started/downloads.html). Pick version `4.0.7` instead of `latest` when running `./emsdk install` or `./emsdk activate`. To conveniently access Emscripten SDK tools, the activate command will offer some suggestions — it is recommended to follow them.
@@ -64,3 +89,8 @@ If you only need to flash the firmware you can use the following command:
 ```
 ./waf flash
 ```
+# Changes
+- Edited [third_party/nimble/wscript](third_party/nimble/wscript) to link Nordic Softdevice Controller link layer instead of Nimble's link lyaer.
+- Added new target `nrf52840dk`, changes and additions can be found in directiories: [src/fw/mfg/nrf52840dk](src/fw/mfg/nrf52840dk), [platform/nrf52840dk](platform/nrf52840dk), and  [resources/normal/nrf52840dk](resources/normal/nrf52840dk).
+- Added Nordic Softdevice Controller Link Layer to Nimble. Changes can be found in [third_party/nimble/mynewt-nimble](https://github.com/asilz/mynewt-nimble/tree/0c47225d0fcf2bf410c84c64a8934aa4bff6d2e5) which is a submodule of this repo, for more details follow the link.
+- Various big fixes.
