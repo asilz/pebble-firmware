@@ -71,8 +71,12 @@ picocom /dev/ttyACM0 -b 1000000
 ```
 The path to the device may not be the same as in the above example.
 
+# Bluetooth
+- A bluetooth signal should appear with the name "Asil" several seconds after booting
+- You can change the name of the advertiser in [src/fw/comm/ble/gap_le_slave_discovery.c](src/fw/comm/ble/gap_le_slave_discovery.c) at line 82
+
 # Changes
-- Edited [third_party/nimble/wscript](third_party/nimble/wscript) to link Nordic Softdevice Controller link layer instead of Nimble's link lyaer.
+- Edited [third_party/nimble/wscript](third_party/nimble/wscript) to link Nordic Softdevice Controller link layer instead of Nimble's link layer.
 - Added new target `nrf52840dk`, changes and additions can be found in directiories: [src/fw/mfg/nrf52840dk](src/fw/mfg/nrf52840dk), [platform/nrf52840dk](platform/nrf52840dk), and  [resources/normal/nrf52840dk](resources/normal/nrf52840dk).
 - Added Nordic Softdevice Controller Link Layer to Nimble. Changes can be found in [third_party/nimble/mynewt-nimble](https://github.com/asilz/mynewt-nimble/tree/master) which is a submodule of this repo — for more details follow the link.
 - Various big fixes.
